@@ -1,0 +1,53 @@
+# Environnement virtuel (VOTRE cas : .env au lieu de venv)
+.env/
+env/
+venv/
+ENV/
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.pyc
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+
+# Fichiers sensibles (VOTRE fichier de configuration)
+config.env
+.env.local
+secrets.json
+
+# Media files (uploads: photos, documents)
+media/
+
+# Static files
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Backups
+*.sql
+*.dump
+backups/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
