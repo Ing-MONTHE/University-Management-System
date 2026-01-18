@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'apps.core',  #Module CORE (User, Role, Permission)
     'apps.academic',   #Module Academic
     'apps.students',   #Module Etudiant/Enseignant
+    'apps.evaluations',   #Module Note et Evaluation
 ]
 
 MIDDLEWARE = [
