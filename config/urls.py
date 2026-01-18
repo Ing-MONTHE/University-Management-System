@@ -23,6 +23,9 @@ urlpatterns = [
 
     #API - Module Academic
     path('api/', include('apps.academic.urls')),
+
+    #API - Module Students
+    path('api/', include('apps.students.urls')),
 ]
 
 #Servir les fichiers médias en développement

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     #Notre application
     'apps.core',  #Module CORE (User, Role, Permission)
     'apps.academic',   #Module Academic
+    'apps.students',   #Module Etudiant/Enseignant
 ]
 
 MIDDLEWARE = [
