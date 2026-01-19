@@ -48,9 +48,9 @@ University Management System (UMS) est une application web complète pour la ges
 
 #### 👥 Sprint 3 : Étudiants et Enseignants
 - Gestion des étudiants (profils complets)
-- Génération automatique de matricules (format : STU-YYYY-###)
+- Génération automatique de matricules (format : ETUYYYY###)
 - Gestion des enseignants (profils, grades, CV)
-- Génération automatique de matricules enseignants (format : TCH-YYYY-###)
+- Génération automatique de matricules enseignants (format : ENSYYYY###)
 - Inscriptions des étudiants avec gestion des paiements
 - Attributions des enseignants aux matières (CM, TD, TP)
 - Calcul de charge horaire des enseignants
