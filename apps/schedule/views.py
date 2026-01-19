@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q, Avg
+from django.http import HttpResponse
 
 from .models import Batiment, Salle, Creneau, Cours, ConflitSalle
 from .serializers import (
@@ -20,6 +21,12 @@ from .serializers import (
     StatistiquesEmploiDuTempsSerializer
 )
 from apps.academic.models import AnneeAcademique
+from .utils import (
+    EmploiDuTempsPDF,
+    EmploiDuTempsExcel,
+    ConflitsPDF,
+    PlanningEnseignantPDF
+)
 
 # BATIMENT VIEWSET
 class BatimentViewSet(viewsets.ModelViewSet):
@@ -464,6 +471,228 @@ class CoursViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['post'], url_path='emploi-du-temps-pdf')
+    def emploi_du_temps_pdf(self, request):
+        """
+        Télécharger l'emploi du temps en PDF.
+        POST /api/cours/emploi-du-temps-pdf/
+        
+        Body:
+        {
+            "filiere_id": 1,
+            "semestre": 1,
+            "annee_academique_id": 1
+        }
+        """
+        serializer = EmploiDuTempsSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        filiere_id = serializer.validated_data['filiere_id']
+        semestre = serializer.validated_data['semestre']
+        annee_academique_id = serializer.validated_data.get('annee_academique_id')
+        
+        # Année académique
+        if not annee_academique_id:
+            try:
+                annee_active = AnneeAcademique.objects.get(is_active=True)
+                annee_academique_id = annee_active.id
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Aucune année académique active'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        try:
+            from apps.students.models import Filiere
+            filiere = Filiere.objects.get(id=filiere_id)
+            annee_academique = AnneeAcademique.objects.get(id=annee_academique_id)
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Récupérer les cours
+        cours = Cours.objects.filter(
+            filiere_id=filiere_id,
+            semestre=semestre,
+            annee_academique_id=annee_academique_id,
+            is_actif=True
+        ).select_related(
+            'matiere', 'enseignant__user', 'salle', 'creneau'
+        ).order_by('creneau__jour', 'creneau__heure_debut')
+        
+        # Grouper par jour
+        jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI']
+        cours_par_jour = {}
+        
+        for jour in jours:
+            cours_jour = cours.filter(creneau__jour=jour)
+            if cours_jour.exists():
+                cours_par_jour[jour] = list(cours_jour)
+        
+        # Générer le PDF
+        pdf_generator = EmploiDuTempsPDF(filiere, semestre, annee_academique, cours_par_jour)
+        pdf_buffer = pdf_generator.generate()
+        
+        # Nom du fichier
+        filename = f"Emploi_du_temps_{filiere.code}_S{semestre}_{annee_academique.code}.pdf"
+        
+        # Réponse HTTP
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+    
+    @action(detail=False, methods=['post'], url_path='emploi-du-temps-excel')
+    def emploi_du_temps_excel(self, request):
+        """
+        Télécharger l'emploi du temps en Excel.
+        POST /api/cours/emploi-du-temps-excel/
+        
+        Body:
+        {
+            "filiere_id": 1,
+            "semestre": 1,
+            "annee_academique_id": 1
+        }
+        """
+        serializer = EmploiDuTempsSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        filiere_id = serializer.validated_data['filiere_id']
+        semestre = serializer.validated_data['semestre']
+        annee_academique_id = serializer.validated_data.get('annee_academique_id')
+        
+        # Année académique
+        if not annee_academique_id:
+            try:
+                annee_active = AnneeAcademique.objects.get(is_active=True)
+                annee_academique_id = annee_active.id
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Aucune année académique active'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        try:
+            from apps.students.models import Filiere
+            filiere = Filiere.objects.get(id=filiere_id)
+            annee_academique = AnneeAcademique.objects.get(id=annee_academique_id)
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Récupérer les cours
+        cours = Cours.objects.filter(
+            filiere_id=filiere_id,
+            semestre=semestre,
+            annee_academique_id=annee_academique_id,
+            is_actif=True
+        ).select_related(
+            'matiere', 'enseignant__user', 'salle', 'creneau'
+        ).order_by('creneau__jour', 'creneau__heure_debut')
+        
+        # Grouper par jour
+        jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI']
+        cours_par_jour = {}
+        
+        for jour in jours:
+            cours_jour = cours.filter(creneau__jour=jour)
+            if cours_jour.exists():
+                cours_par_jour[jour] = list(cours_jour)
+        
+        # Générer le Excel
+        excel_generator = EmploiDuTempsExcel(filiere, semestre, annee_academique, cours_par_jour)
+        excel_buffer = excel_generator.generate()
+        
+        # Nom du fichier
+        filename = f"Emploi_du_temps_{filiere.code}_S{semestre}_{annee_academique.code}.xlsx"
+        
+        # Réponse HTTP
+        response = HttpResponse(
+            excel_buffer,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+    
+    @action(detail=False, methods=['get'], url_path='planning-enseignant-pdf/(?P<enseignant_id>[^/.]+)')
+    def planning_enseignant_pdf(self, request, enseignant_id=None):
+        """
+        Télécharger le planning d'un enseignant en PDF.
+        GET /api/cours/planning-enseignant-pdf/{enseignant_id}/
+        
+        Query params: ?annee_academique_id=1
+        """
+        annee_academique_id = request.query_params.get('annee_academique_id')
+        
+        # Année académique
+        if not annee_academique_id:
+            try:
+                annee_academique = AnneeAcademique.objects.get(is_active=True)
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Aucune année académique active'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            try:
+                annee_academique = AnneeAcademique.objects.get(id=annee_academique_id)
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Année académique introuvable'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Enseignant
+        try:
+            from apps.students.models import Enseignant
+            enseignant = Enseignant.objects.select_related('user').get(id=enseignant_id)
+        except Enseignant.DoesNotExist:
+            return Response(
+                {'error': 'Enseignant introuvable'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Récupérer les cours
+        cours = Cours.objects.filter(
+            enseignant_id=enseignant_id,
+            annee_academique=annee_academique,
+            is_actif=True
+        ).select_related(
+            'matiere', 'filiere', 'salle', 'creneau'
+        ).order_by('creneau__jour', 'creneau__heure_debut')
+        
+        # Grouper par jour
+        jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI']
+        cours_par_jour = {}
+        
+        for jour in jours:
+            cours_jour = cours.filter(creneau__jour=jour)
+            if cours_jour.exists():
+                cours_par_jour[jour] = list(cours_jour)
+        
+        # Générer le PDF
+        pdf_generator = PlanningEnseignantPDF(enseignant, cours_par_jour, annee_academique)
+        pdf_buffer = pdf_generator.generate()
+        
+        # Nom du fichier
+        filename = f"Planning_{enseignant.user.last_name}_{annee_academique.code}.pdf"
+        
+        # Réponse HTTP
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
 
 # CONFLIT SALLE VIEWSET
 class ConflitSalleViewSet(viewsets.ModelViewSet):
@@ -587,3 +816,59 @@ class ConflitSalleViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['get'], url_path='export-pdf')
+    def export_pdf(self, request):
+        """
+        Exporter la liste des conflits en PDF.
+        GET /api/conflits/export-pdf/
+        
+        Query params: ?annee_academique_id=1&statut=DETECTE
+        """
+        annee_academique_id = request.query_params.get('annee_academique_id')
+        statut = request.query_params.get('statut')
+        
+        # Année académique
+        if not annee_academique_id:
+            try:
+                annee_academique = AnneeAcademique.objects.get(is_active=True)
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Aucune année académique active'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            try:
+                annee_academique = AnneeAcademique.objects.get(id=annee_academique_id)
+            except AnneeAcademique.DoesNotExist:
+                return Response(
+                    {'error': 'Année académique introuvable'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        
+        # Filtrer les conflits
+        conflits = ConflitSalle.objects.filter(
+            cours1__annee_academique=annee_academique
+        ).select_related(
+            'cours1__matiere', 'cours1__filiere', 'cours1__salle',
+            'cours2__matiere', 'cours2__filiere', 'cours2__salle'
+        )
+        
+        # Filtrer par statut si demandé
+        if statut:
+            conflits = conflits.filter(statut=statut)
+        
+        conflits = conflits.order_by('-date_detection')
+        
+        # Générer le PDF
+        pdf_generator = ConflitsPDF(list(conflits), annee_academique)
+        pdf_buffer = pdf_generator.generate()
+        
+        # Nom du fichier
+        filename = f"Rapport_Conflits_{annee_academique.code}.pdf"
+        
+        # Réponse HTTP
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response

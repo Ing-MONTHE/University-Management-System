@@ -4,6 +4,13 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count
 from .models import Batiment, Salle, Creneau, Cours, ConflitSalle
+from django.http import HttpResponse
+from .utils import (
+    EmploiDuTempsPDF,
+    EmploiDuTempsExcel,
+    ConflitsPDF,
+    PlanningEnseignantPDF
+)
 
 # BATIMENT ADMIN
 @admin.register(Batiment)
@@ -227,7 +234,7 @@ class CoursAdmin(admin.ModelAdmin):
         return format_html('<span style="color: red;">✗ Inactif</span>')
     get_is_actif.short_description = 'Statut'
     
-    actions = ['dupliquer_cours', 'desactiver_cours', 'activer_cours']
+    actions = ['dupliquer_cours', 'desactiver_cours', 'activer_cours', 'exporter_selection_pdf']
     
     def dupliquer_cours(self, request, queryset):
         """Action pour dupliquer des cours."""
@@ -252,6 +259,40 @@ class CoursAdmin(admin.ModelAdmin):
         count = queryset.update(is_actif=True)
         self.message_user(request, f"{count} cours activé(s).")
     activer_cours.short_description = "Activer les cours sélectionnés"
+    
+    def exporter_selection_pdf(self, request, queryset):
+        """Exporter la sélection en PDF."""
+        from apps.academic.models import AnneeAcademique
+        
+        # Grouper par filière
+        filiere = queryset.first().filiere if queryset.exists() else None
+        semestre = queryset.first().semestre if queryset.exists() else 1
+        annee_academique = queryset.first().annee_academique if queryset.exists() else None
+        
+        if not filiere or not annee_academique:
+            self.message_user(request, "Impossible de générer le PDF", level='error')
+            return
+        
+        # Grouper par jour
+        jours = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI']
+        cours_par_jour = {}
+        
+        for jour in jours:
+            cours_jour = queryset.filter(creneau__jour=jour).order_by('creneau__heure_debut')
+            if cours_jour.exists():
+                cours_par_jour[jour] = list(cours_jour)
+        
+        # Générer PDF
+        pdf_generator = EmploiDuTempsPDF(filiere, semestre, annee_academique, cours_par_jour)
+        pdf_buffer = pdf_generator.generate()
+        
+        # Retourner le PDF
+        filename = f"Cours_Selection_{filiere.code}.pdf"
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+    exporter_selection_pdf.short_description = "Exporter sélection en PDF"
 
 # CONFLIT SALLE ADMIN
 @admin.register(ConflitSalle)
@@ -342,7 +383,7 @@ class ConflitSalleAdmin(admin.ModelAdmin):
         return format_html('<span style="color: gray;">N/A</span>')
     get_cours2.short_description = 'Cours 2'
     
-    actions = ['marquer_en_cours', 'marquer_resolu', 'marquer_ignore']
+    actions = ['marquer_en_cours', 'marquer_resolu', 'marquer_ignore', 'exporter_conflits_pdf']
     
     def marquer_en_cours(self, request, queryset):
         """Action pour marquer en cours."""
@@ -367,3 +408,29 @@ class ConflitSalleAdmin(admin.ModelAdmin):
         count = queryset.update(statut='IGNORE')
         self.message_user(request, f"{count} conflit(s) ignoré(s).")
     marquer_ignore.short_description = "Ignorer"
+    
+    def exporter_conflits_pdf(self, request, queryset):
+        """Exporter les conflits sélectionnés en PDF."""
+        from apps.academic.models import AnneeAcademique
+        
+        # Année académique du premier conflit
+        annee_academique = queryset.first().cours1.annee_academique if queryset.exists() else None
+        
+        if not annee_academique:
+            try:
+                annee_academique = AnneeAcademique.objects.get(is_active=True)
+            except AnneeAcademique.DoesNotExist:
+                self.message_user(request, "Aucune année académique trouvée", level='error')
+                return
+        
+        # Générer PDF
+        pdf_generator = ConflitsPDF(list(queryset), annee_academique)
+        pdf_buffer = pdf_generator.generate()
+        
+        # Retourner le PDF
+        filename = f"Conflits_Selection_{annee_academique.code}.pdf"
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+    exporter_conflits_pdf.short_description = "Exporter sélection en PDF"
