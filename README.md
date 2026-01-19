@@ -233,7 +233,7 @@ University_Management/
 
 #### 1. Cloner le projet
 ```bash
-git clone https://github.com/VOTRE-USERNAME/University-Management-System.git
+git clone https://github.com/Ing-MONTHE/University-Management-System.git
 cd University-Management-System
 ```
 
