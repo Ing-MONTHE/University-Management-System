@@ -19,15 +19,15 @@ Système complet de gestion universitaire développé avec Django REST Framework
 
 ## 📖 À propos
 
-University Management System (UMS) est une application web complète pour la gestion d'une université. Elle permet de gérer les étudiants, les enseignants, les inscriptions, les notes, les évaluations, les délibérations et bien plus encore.
+University Management System (UMS) est une application web complète pour la gestion d'une université. Elle permet de gérer les étudiants, les enseignants, les inscriptions, les notes, les évaluations, les délibérations, les emplois du temps et bien plus encore.
 
-**Statut du projet :** 🚧 En développement (4/10 sprints terminés - 40%)
+**Statut du projet :** 🚧 En développement (5/10 sprints terminés - 50%)
 
 ---
 
 ## ✨ Fonctionnalités
 
-### ✅ Fonctionnalités implémentées (Sprints 1-4)
+### ✅ Fonctionnalités implémentées (Sprints 1-5)
 
 #### 🔐 Sprint 1 : Infrastructure de base
 - Authentification JWT (Access + Refresh tokens)
@@ -88,11 +88,46 @@ University Management System (UMS) est une application web complète pour la ges
 - Taux de réussite automatique
 - **API Endpoints :** ~50
 
-**Total API Endpoints : ~150**
+#### 📅 Sprint 5 : Emploi du temps et Gestion des Salles
+**Bâtiments et Salles :**
+- Gestion des bâtiments (code, nom, nombre d'étages)
+- Gestion des salles (types : COURS, TD, TP, AMPHI, CONFERENCE)
+- Capacités et équipements
+- Taux d'occupation automatique
+- Vérification de disponibilité en temps réel
 
-### ⏳ Fonctionnalités à venir (Sprints 5-10)
+**Créneaux horaires :**
+- Gestion des créneaux (jour, heure début, heure fin)
+- Durée automatique en minutes
+- Validation : heure fin > heure début
+- Organisation par jour de la semaine
 
-- **Sprint 5 :** Emploi du temps et planification des cours
+**Cours et Programmation :**
+- Programmation des cours (matière, enseignant, filière, salle, créneau)
+- Types de cours (CM, TD, TP)
+- Effectif prévu et validation capacité
+- **Validation automatique en temps réel** :
+  - Conflit de salle (2 cours, même salle, même créneau)
+  - Conflit d'enseignant (1 prof, 2 cours simultanés)
+  - Capacité dépassée (effectif > capacité salle)
+- Génération d'emploi du temps par filière et semestre
+- Consultation par enseignant
+- Duplication de cours
+
+**Détection et Gestion des Conflits :**
+- Détection automatique de 3 types de conflits :
+  - Conflit de salle
+  - Conflit d'enseignant
+  - Capacité dépassée
+- Statuts : DETECTE, EN_COURS, RESOLU, IGNORE
+- Tracking de la résolution avec date et solution appliquée
+- Statistiques des conflits
+- **API Endpoints :** ~45
+
+**Total API Endpoints : ~180**
+
+### ⏳ Fonctionnalités à venir (Sprints 6-10)
+
 - **Sprint 6 :** Finance et gestion complète des paiements
 - **Sprint 7 :** Inscriptions en ligne (portail étudiant)
 - **Sprint 8 :** Bibliothèque et gestion des emprunts
@@ -107,7 +142,7 @@ University Management System (UMS) est une application web complète pour la ges
 - **Python 3.13**
 - **Django 6.0.1**
 - **Django REST Framework 3.14+**
-- **PostgreSQL 16** (Base de données)
+- **PostgreSQL 17** (Base de données)
 - **JWT** (Authentification)
 
 ### Packages principaux
@@ -160,12 +195,19 @@ University_Management/
 │   │   ├── urls.py            # ~35 endpoints
 │   │   └── admin.py           # Config admin
 │   │
-│   └── evaluations/            # Sprint 4 - Notes & Évaluations
-│       ├── models.py          # TypeEvaluation, Evaluation, Note, Resultat
-│       │                      # SessionDeliberation, MembreJury, DecisionJury
+│   ├── evaluations/            # Sprint 4 - Notes & Évaluations
+│   │   ├── models.py          # TypeEvaluation, Evaluation, Note, Resultat
+│   │   │                      # SessionDeliberation, MembreJury, DecisionJury
+│   │   ├── serializers.py     # 10 serializers
+│   │   ├── views.py           # 7 viewsets
+│   │   ├── urls.py            # ~50 endpoints
+│   │   └── admin.py           # Config admin
+│   │
+│   └── schedule/               # Sprint 5 - Emploi du temps
+│       ├── models.py          # Batiment, Salle, Creneau, Cours, ConflitSalle
 │       ├── serializers.py     # 10 serializers
-│       ├── views.py           # 7 viewsets
-│       ├── urls.py            # ~50 endpoints
+│       ├── views.py           # 5 viewsets
+│       ├── urls.py            # ~45 endpoints
 │       └── admin.py           # Config admin
 │
 ├── media/                       # Fichiers uploadés (photos, CV)
@@ -269,7 +311,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Le serveur sera accessible sur : **http://localhost:8000**
+Le serveur sera accessible sur : **http://localhost:8000 ou http://127.0.0.1:8000**
 
 ---
 
@@ -281,10 +323,6 @@ Le serveur sera accessible sur : **http://localhost:8000**
 - **PostgreSQL :** 5432
 - **Frontend (futur) :** 3000
 
-### Comptes par défaut
-
-- **Admin :** `admin` / `Admin123!` (à changer après installation)
-
 ---
 
 ## 📖 Utilisation
@@ -293,19 +331,19 @@ Le serveur sera accessible sur : **http://localhost:8000**
 
 Accédez à l'interface d'administration Django :
 ```
-http://localhost:8000/admin/
+http://localhost:8000/admin/ ou http://127.0.0.1:8000/admin/
 ```
 
 ### Documentation API (Swagger)
 
 Documentation interactive de l'API :
 ```
-http://localhost:8000/api/docs/
+http://localhost:8000/api/docs/ ou http://127.0.0.1:8000/api/docs/
 ```
 
 ### Schéma OpenAPI
 ```
-http://localhost:8000/api/schema/
+http://localhost:8000/api/schema/ ou http://127.0.0.1:8000/api/schema
 ```
 
 ---
@@ -314,11 +352,11 @@ http://localhost:8000/api/schema/
 
 ### Authentification
 
-Toutes les requêtes API (sauf `/api/auth/login/`) nécessitent un token JWT.
+Toutes les requêtes API (sauf `/api/core/auth/login/`) nécessitent un token JWT.
 
 #### Obtenir un token
 ```bash
-curl -X POST http://localhost:8000/api/auth/login/ \
+curl -X POST http://localhost:8000/api/core/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username": "admin", "password": "Admin123!"}'
 ```
@@ -409,6 +447,30 @@ POST /api/sessions-deliberation/{id}/cloturer/  # Clôturer session
 GET  /api/decisions-jury/          # Décisions du jury
 ```
 
+#### **Emploi du temps (Sprint 5)**
+```
+GET  /api/batiments/               # Bâtiments
+GET  /api/batiments/{id}/salles/   # Salles d'un bâtiment
+GET  /api/batiments/statistiques/  # Statistiques
+
+GET  /api/salles/                  # Salles
+GET  /api/salles/{id}/disponibilite/  # Vérifier disponibilité
+GET  /api/salles/disponibles/      # Salles disponibles pour un créneau
+GET  /api/salles/statistiques/     # Statistiques
+
+GET  /api/creneaux/                # Créneaux horaires
+GET  /api/creneaux/par-jour/       # Créneaux groupés par jour
+
+GET  /api/cours/                   # Cours programmés
+POST /api/cours/emploi-du-temps/   # Générer emploi du temps par filière
+GET  /api/cours/par-enseignant/{id}/  # Cours d'un enseignant
+GET  /api/cours/statistiques/      # Statistiques
+
+POST /api/conflits/detecter/       # Détecter conflits automatiquement
+POST /api/conflits/{id}/resoudre/  # Marquer conflit résolu
+GET  /api/conflits/statistiques/   # Statistiques des conflits
+```
+
 ### Format des réponses
 
 Toutes les listes sont paginées :
@@ -441,42 +503,16 @@ Toutes les listes sont paginées :
 | 2 | Structure académique | ✅ **Terminé** | AnneeAcademique, Faculte, Departement, Filiere, Matiere | ~35 |
 | 3 | Étudiants & Enseignants | ✅ **Terminé** | Etudiant, Enseignant, Inscription, Attribution | ~35 |
 | 4 | Notes & Évaluations | ✅ **Terminé** | TypeEvaluation, Evaluation, Note, Resultat, SessionDeliberation, MembreJury, DecisionJury | ~50 |
-| 5 | Emploi du temps | ⏳ **À faire** | Programmation des cours, salles, horaires | - |
-| 6 | Finance avancée | ⏳ À faire | Gestion complète des paiements, reçus | - |
+| 5 | Emploi du temps | ✅ **Terminé** | Batiment, Salle, Creneau, Cours, ConflitSalle | ~45 |
+| 6 | Finance avancée | ⏳ **À faire** | Gestion complète des paiements, reçus | - |
 | 7 | Inscriptions en ligne | ⏳ À faire | Portail web pour étudiants | - |
 | 8 | Bibliothèque | ⏳ À faire | Gestion des livres et emprunts | - |
 | 9 | Notifications | ⏳ À faire | Email, SMS, notifications push | - |
 | 10 | Reporting | ⏳ À faire | Statistiques avancées, exports | - |
 
-**Progression globale : 40% (4/10 sprints) | ~150 endpoints créés**
+**Progression globale : 50% (5/10 sprints) | ~180 endpoints créés**
 
 ---
-
-## 🧪 Tests
-
-### Lancer les tests
-```bash
-python manage.py test
-```
-
-### Couverture des tests
-```bash
-pip install coverage
-coverage run --source='.' manage.py test
-coverage report
-```
-
----
-
-## 📦 Déploiement
-
-### Prérequis production
-
-- Serveur Linux (Ubuntu 22.04+ recommandé)
-- PostgreSQL 16+
-- Nginx
-- Gunicorn
-- Certificat SSL (Let's Encrypt)
 
 ### Variables d'environnement production
 ```env
@@ -484,21 +520,11 @@ DEBUG=False
 ALLOWED_HOSTS=votredomaine.com,www.votredomaine.com
 SECRET_KEY=une-cle-tres-secrete-et-longue
 ```
-
-### Commandes de déploiement
-```bash
-# Collecter les fichiers statiques
-python manage.py collectstatic --noinput
-
-# Lancer avec Gunicorn
-gunicorn config.wsgi:application --bind 0.0.0.0:8000
-```
-
 ---
 
 ## 🤝 Contributeurs
 
-- **Développeur principal :** Ghost
+- **Développeur principal :** MONTHE
 - **Framework :** Django REST Framework
 - **Assistance :** Claude AI (Anthropic)
 
@@ -520,31 +546,54 @@ Pour toute question ou problème :
 
 ## 🔄 Historique des versions
 
-### Version 0.4.0 (Actuelle - Janvier 2026)
+### Version 0.5.0 (Actuelle - Janvier 2026)
 - ✅ Sprint 1 : Infrastructure de base (~15 endpoints)
 - ✅ Sprint 2 : Structure académique (~35 endpoints)
 - ✅ Sprint 3 : Étudiants et Enseignants (~35 endpoints)
 - ✅ Sprint 4 : Notes, Évaluations et Délibérations (~50 endpoints)
-- **Total : ~150 endpoints fonctionnels**
+- ✅ Sprint 5 : Emploi du temps et Gestion des Conflits (~45 endpoints)
+- **Total : ~180 endpoints fonctionnels**
 
 ### Prochaines versions
-- **0.5.0** : Emploi du temps
 - **0.6.0** : Finance avancée
 - **0.7.0** : Inscriptions en ligne
+- **0.8.0** : Bibliothèque
 - **1.0.0** : Version complète (tous les 10 sprints)
 
 ---
 
 ## 🎯 Métriques du projet
 
-- **Lines of Code :** ~8,000+
-- **Models :** 20
-- **Serializers :** 35+
-- **ViewSets :** 21
-- **API Endpoints :** ~150
-- **Admin Interfaces :** 20
-- **Migrations :** 8
+- **Lines of Code :** ~12,000+
+- **Models :** 25
+- **Serializers :** 45+
+- **ViewSets :** 26
+- **API Endpoints :** ~180
+- **Admin Interfaces :** 25
+- **Migrations :** 10
 
 ---
 
-**Fait avec ❤️ pour la gestion universitaire moderne**
+## 🌟 Points forts du système
+
+### **Gestion intelligente des conflits**
+Le système détecte automatiquement 3 types de conflits :
+- Conflit de salle (2 cours au même créneau)
+- Conflit d'enseignant (double programmation)
+- Capacité dépassée (trop d'étudiants)
+
+### **Validation en temps réel**
+Impossible de créer un cours en conflit - le système bloque immédiatement.
+
+### **Génération automatique**
+- Matricules étudiants/enseignants
+- Moyennes et mentions
+- Emplois du temps
+- Détection de conflits
+
+### **Statistiques complètes**
+Chaque module offre des statistiques détaillées pour le pilotage.
+
+---
+
+**Fait pour une gestion universitaire moderne**

@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.academic',   #Module Academic
     'apps.students',   #Module Etudiant/Enseignant
     'apps.evaluations',   #Module Note et Evaluation
+    'apps.schedule',    #Module Emplois du temps
 ]
 
 MIDDLEWARE = [
