@@ -10,6 +10,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     #Admin django
     path('admin/', admin.site.urls),
+    path('api/', include('apps.core.urls')),
 
     #Documentation API (Swagger)
     #Schema OpenAPI
