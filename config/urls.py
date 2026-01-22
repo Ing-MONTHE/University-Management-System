@@ -33,6 +33,9 @@ urlpatterns = [
 
     #API - Module Emploi du Temps
     path('api/', include('apps.schedule.urls')),
+
+    #API - Module bibliotheque
+    path('api/', include('apps.library.urls')),
 ]
 
 #Servir les fichiers médias en développement

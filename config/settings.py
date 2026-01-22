@@ -52,12 +52,14 @@ INSTALLED_APPS = [
     'drf_spectacular',     #Pour la documentation de l'API
     'phonenumber_field',     #Pour gérer les numéros de téléphone
 
-    #Notre application
+    #Nos applications
     'apps.core',  #Module CORE (User, Role, Permission)
     'apps.academic',   #Module Academic
     'apps.students',   #Module Etudiant/Enseignant
     'apps.evaluations',   #Module Note et Evaluation
     'apps.schedule',    #Module Emplois du temps
+    'apps.library',     #Module bibliotheque
+    'apps.attendance',   #Module presence
 ]
 
 MIDDLEWARE = [

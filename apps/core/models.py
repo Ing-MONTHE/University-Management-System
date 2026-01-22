@@ -7,6 +7,32 @@ from django.core.validators import EmailValidator
 from django.utils import timezone
 import uuid
 
+# MODÈLE DE BASE ABSTRAIT
+class BaseModel(models.Model):
+    """
+    Modèle abstrait de base pour tous les modèles de l'application.
+    
+    Ajoute automatiquement les champs de traçabilité :
+    - created_at : Date de création
+    - updated_at : Date de dernière modification
+    
+    Ce modèle ne crée pas de table en base de données (abstract=True).
+    Tous les modèles qui héritent de BaseModel auront ces champs.
+    """
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date de création",
+        help_text="Date et heure de création de l'enregistrement"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Date de modification",
+        help_text="Date et heure de la dernière modification"
+    )
+    
+    class Meta:
+        abstract = True  # Modèle abstrait = pas de table en BDD
+        ordering = ['-created_at']  # Tri par défaut : plus récent en premier
 
 # MANAGER PERSONNALISÉ POUR USER
 class UserManager(BaseUserManager):

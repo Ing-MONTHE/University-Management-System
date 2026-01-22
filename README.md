@@ -13,126 +13,261 @@ Système complet de gestion universitaire développé avec Django REST Framework
 - [Utilisation](#utilisation)
 - [API Documentation](#api-documentation)
 - [Sprints du projet](#sprints-du-projet)
+- [Roadmap](#roadmap)
 - [Contributeurs](#contributeurs)
 
 ---
 
 ## 📖 À propos
 
-University Management System (UMS) est une application web complète pour la gestion d'une université. Elle permet de gérer les étudiants, les enseignants, les inscriptions, les notes, les évaluations, les délibérations, les emplois du temps et bien plus encore.
+University Management System (UMS) est une application web complète pour la gestion d'une université. Elle permet de gérer les étudiants, les enseignants, les inscriptions, les notes, les évaluations, les délibérations, les emplois du temps, la bibliothèque et bien plus encore.
 
-**Statut du projet :** 🚧 En développement (5/10 sprints terminés - 50%)
+**Statut du projet :** 🚧 En développement actif (6/12 sprints terminés - 50%)
 
 ---
 
 ## ✨ Fonctionnalités
 
-### ✅ Fonctionnalités implémentées (Sprints 1-5)
+### ✅ Fonctionnalités implémentées (Sprints 1-6)
 
 #### 🔐 Sprint 1 : Infrastructure de base
+**Authentification et gestion des utilisateurs**
+
 - Authentification JWT (Access + Refresh tokens)
 - Gestion des utilisateurs (User, Role, Permission)
 - Système de permissions granulaires
 - Système d'audit (logs des actions)
 - Interface d'administration Django
-- **API Endpoints :** ~15
+- **API Endpoints :** ~25
+
+**Modèles :**
+- User (utilisateur personnalisé)
+- Role (rôles utilisateurs)
+- Permission (permissions granulaires)
+- AuditLog (traçabilité des actions)
+
+---
 
 #### 🏛️ Sprint 2 : Structure académique
+**Organisation hiérarchique de l'université**
+
 - Gestion des années académiques (avec activation)
 - Gestion des facultés (avec statistiques)
 - Gestion des départements (rattachés aux facultés)
 - Gestion des filières (Licence, Master, Doctorat, DUT, BTS)
 - Gestion des matières (avec CM, TD, TP)
-- Relations hiérarchiques complètes
-- **API Endpoints :** ~35
+- Relations hiérarchiques : Université → Faculté → Département → Filière → Matière
+- **API Endpoints :** ~40
+
+**Modèles :**
+- AnneeAcademique
+- Faculte
+- Departement
+- Filiere
+- Matiere
+
+**Fonctionnalités clés :**
+- Activation/désactivation des années académiques
+- Statistiques par faculté (nb départements, filières, étudiants)
+- Chef de département assignable
+- Coefficients et crédits ECTS par matière
+
+---
 
 #### 👥 Sprint 3 : Étudiants et Enseignants
-- Gestion des étudiants (profils complets)
+**Gestion complète des acteurs universitaires**
+
+- Gestion des étudiants (profils complets avec photos)
 - Génération automatique de matricules (format : ETUYYYY###)
 - Gestion des enseignants (profils, grades, CV)
 - Génération automatique de matricules enseignants (format : ENSYYYY###)
 - Inscriptions des étudiants avec gestion des paiements
 - Attributions des enseignants aux matières (CM, TD, TP)
-- Calcul de charge horaire des enseignants
-- Statistiques détaillées par sexe, nationalité, grade
+- Calcul automatique de charge horaire
+- Statistiques détaillées (sexe, nationalité, grade)
 - **API Endpoints :** ~35
 
+**Modèles :**
+- Etudiant
+- Enseignant
+- Inscription
+- Attribution
+
+**Fonctionnalités clés :**
+- Matricules auto-générés uniques
+- Suivi des paiements des inscriptions
+- Charge horaire calculée automatiquement
+- Validation : 1 enseignant par type de cours (CM/TD/TP)
+
+---
+
 #### 📊 Sprint 4 : Notes, Évaluations et Délibérations
+**Système complet de gestion académique**
+
 **Évaluations :**
 - Types d'évaluations (Devoir, Examen, Rattrapage, TD, TP, Projet)
-- Création d'évaluations avec coefficient et barème
-- Duplication d'évaluations
-- Statistiques par évaluation (moyenne, min, max, répartition)
+- Création avec coefficient et barème personnalisables
+- Duplication d'évaluations pour réutilisation
+- Statistiques automatiques (moyenne, min, max, répartition)
 
 **Notes :**
-- Saisie individuelle ou multiple des notes
-- Gestion des absences
-- Conversion automatique des notes sur 20
-- Appréciations automatiques (Excellent, Très bien, Bien, etc.)
-- Validation des notes (note <= barème)
+- Saisie individuelle ou en lot
+- Gestion des absences aux évaluations
+- Conversion automatique sur base 20
+- Appréciations automatiques (Excellent, Très bien, Bien, Passable, Insuffisant)
+- Validation : note ≤ barème
 
 **Résultats :**
 - Calcul automatique des moyennes pondérées
 - Génération des mentions (Passable à Excellent)
-- Calcul du statut (ADMIS, AJOURNÉ, RATTRAPAGE)
-- Attribution automatique des crédits
+- Détermination du statut (ADMIS, AJOURNÉ, RATTRAPAGE)
+- Attribution automatique des crédits ECTS
 - Bulletins complets par étudiant
 
 **Délibérations :**
-- Sessions de délibération par filière/niveau/semestre
+- Sessions de délibération (filière, niveau, semestre)
 - Composition du jury (Président, Membres, Secrétaire)
-- Génération automatique des décisions du jury
-- Calcul automatique des rangs/classements
-- Statuts de session (PREVUE, EN_COURS, TERMINEE, VALIDEE)
-- Procès-verbaux de délibération
+- Génération automatique des décisions
+- Calcul des rangs et classements
+- Statuts : PREVUE, EN_COURS, TERMINEE, VALIDEE
+- Procès-verbaux officiels
 - Taux de réussite automatique
-- **API Endpoints :** ~50
+- **API Endpoints :** ~40
 
-#### 📅 Sprint 5 : Emploi du temps et Gestion des Salles
+**Modèles :**
+- TypeEvaluation
+- Evaluation
+- Note
+- Resultat
+- SessionDeliberation
+- MembreJury
+- DecisionJury
+
+---
+
+#### 📅 Sprint 5 : Emploi du temps et Gestion des Conflits
+**Planification intelligente des cours**
+
 **Bâtiments et Salles :**
-- Gestion des bâtiments (code, nom, nombre d'étages)
+- Gestion des bâtiments (code, nom, étages)
 - Gestion des salles (types : COURS, TD, TP, AMPHI, CONFERENCE)
 - Capacités et équipements
-- Taux d'occupation automatique
-- Vérification de disponibilité en temps réel
+- Taux d'occupation en temps réel
+- Vérification de disponibilité
 
 **Créneaux horaires :**
-- Gestion des créneaux (jour, heure début, heure fin)
-- Durée automatique en minutes
+- Gestion des créneaux (jour, heure début/fin)
+- Calcul automatique de la durée
 - Validation : heure fin > heure début
-- Organisation par jour de la semaine
+- Organisation par jour de semaine
 
 **Cours et Programmation :**
 - Programmation des cours (matière, enseignant, filière, salle, créneau)
-- Types de cours (CM, TD, TP)
-- Effectif prévu et validation capacité
-- **Validation automatique en temps réel** :
-  - Conflit de salle (2 cours, même salle, même créneau)
-  - Conflit d'enseignant (1 prof, 2 cours simultanés)
-  - Capacité dépassée (effectif > capacité salle)
-- Génération d'emploi du temps par filière et semestre
+- Types : CM, TD, TP
+- Validation de capacité
+- **Validation en temps réel :**
+  - Détection conflit de salle
+  - Détection conflit d'enseignant
+  - Vérification capacité vs effectif
+- Génération d'emploi du temps par filière/semestre
 - Consultation par enseignant
 - Duplication de cours
 
 **Détection et Gestion des Conflits :**
-- Détection automatique de 3 types de conflits :
-  - Conflit de salle
-  - Conflit d'enseignant
-  - Capacité dépassée
+- Détection automatique de 3 types :
+  - Conflit de salle (2 cours simultanés, même salle)
+  - Conflit d'enseignant (1 prof, 2 cours en même temps)
+  - Capacité dépassée (effectif > capacité salle)
 - Statuts : DETECTE, EN_COURS, RESOLU, IGNORE
-- Tracking de la résolution avec date et solution appliquée
+- Tracking de résolution (date, solution appliquée)
 - Statistiques des conflits
 - **API Endpoints :** ~45
 
-**Total API Endpoints : ~180**
+**Modèles :**
+- Batiment
+- Salle
+- Creneau
+- Cours
+- ConflitSalle
 
-### ⏳ Fonctionnalités à venir (Sprints 6-10)
+---
 
-- **Sprint 6 :** Finance et gestion complète des paiements
-- **Sprint 7 :** Inscriptions en ligne (portail étudiant)
-- **Sprint 8 :** Bibliothèque et gestion des emprunts
-- **Sprint 9 :** Notifications (Email, SMS, Push)
-- **Sprint 10 :** Reporting avancé et tableaux de bord
+#### 📚 Sprint 6 : Bibliothèque Universitaire ✨ NOUVEAU
+**Gestion complète de la bibliothèque**
+
+**Catalogage des livres :**
+- Catégorisation (Sciences, Littérature, Informatique, etc.)
+- Informations bibliographiques complètes (ISBN, titre, auteur, éditeur, année)
+- Gestion des exemplaires (stock total/disponible)
+- Localisation physique dans la bibliothèque
+- Résumé et description
+- Recherche avancée (titre, auteur, ISBN, catégorie)
+
+**Gestion des emprunts :**
+- Création d'emprunt avec validations :
+  - Vérification disponibilité du livre
+  - Limite de 5 emprunts simultanés par étudiant
+  - Blocage si pénalités impayées
+- Enregistrement des retours
+- Calcul automatique des pénalités (100 FCFA/jour de retard)
+- Mise à jour automatique des statuts :
+  - EN_COURS : Emprunt actif
+  - EN_RETARD : Dépassement de la date de retour
+  - RETOURNE : Livre rendu
+  - ANNULE : Emprunt annulé
+- Gestion intelligente du stock :
+  - Décrémentation automatique à l'emprunt
+  - Incrémentation automatique au retour
+
+**Actions personnalisées :**
+- `/categories/{id}/livres/` : Livres d'une catégorie
+- `/livres/disponibles/` : Livres en stock
+- `/livres/{id}/historique/` : Historique des emprunts
+- `/livres/statistiques/` : Stats bibliothèque
+- `/emprunts/{id}/retour/` : Enregistrer un retour
+- `/emprunts/en_cours/` : Emprunts actifs
+- `/emprunts/en_retard/` : Emprunts en retard (mise à jour auto)
+- `/emprunts/statistiques/` : Stats complètes
+
+**Statistiques et rapports :**
+- Nombre total de livres et exemplaires
+- Taux de disponibilité
+- Répartition par catégorie
+- Emprunts en cours/retard/retournés
+- Total des pénalités
+- Livre le plus emprunté
+- **API Endpoints :** ~30
+
+**Modèles :**
+- CategoriesLivre
+- Livre
+- Emprunt
+
+**Fonctionnalités clés :**
+- Système de pénalités automatique
+- Validation métier complète
+- Historique complet des transactions
+- Détection automatique des retards
+- Blocage intelligent des emprunts
+
+---
+
+**Total API Endpoints Backend : ~215**
+
+---
+
+### ⏳ Fonctionnalités à venir (Sprints 7-12)
+
+Les 6 prochains sprints couvriront :
+
+- **Sprint 7 :** Absences et présences
+- **Sprint 8 :** Finance et scolarité
+- **Sprint 9 :** Communications et notifications
+- **Sprint 10 :** Ressources et salles avancées
+- **Sprint 11 :** Documents administratifs
+- **Sprint 12 :** Rapports et analytics
+
+*(Voir section [Roadmap](#roadmap) pour les détails)*
 
 ---
 
@@ -159,8 +294,10 @@ pillow==10.1.0
 openpyxl==3.1.2
 ```
 
-### Frontend (À venir)
-- React.js + Tailwind CSS (Sprint 11+)
+### Frontend (À venir - Sprint 13+)
+- React.js 19+ + TypeScript
+- Tailwind CSS 4+
+- Vite
 
 ---
 
@@ -178,14 +315,14 @@ University_Management/
 │   │   ├── models.py          # User, Role, Permission, AuditLog
 │   │   ├── serializers.py     # 8 serializers
 │   │   ├── views.py           # 5 viewsets
-│   │   ├── urls.py            # ~15 endpoints
+│   │   ├── urls.py            # ~25 endpoints
 │   │   └── admin.py           # Config admin
 │   │
 │   ├── academic/               # Sprint 2 - Structure académique
 │   │   ├── models.py          # AnneeAcademique, Faculte, Departement, Filiere, Matiere
 │   │   ├── serializers.py     # 6 serializers
 │   │   ├── views.py           # 5 viewsets
-│   │   ├── urls.py            # ~35 endpoints
+│   │   ├── urls.py            # ~40 endpoints
 │   │   └── admin.py           # Config admin
 │   │
 │   ├── students/               # Sprint 3 - Étudiants & Enseignants
@@ -200,14 +337,21 @@ University_Management/
 │   │   │                      # SessionDeliberation, MembreJury, DecisionJury
 │   │   ├── serializers.py     # 10 serializers
 │   │   ├── views.py           # 7 viewsets
-│   │   ├── urls.py            # ~50 endpoints
+│   │   ├── urls.py            # ~40 endpoints
 │   │   └── admin.py           # Config admin
 │   │
-│   └── schedule/               # Sprint 5 - Emploi du temps
-│       ├── models.py          # Batiment, Salle, Creneau, Cours, ConflitSalle
-│       ├── serializers.py     # 10 serializers
-│       ├── views.py           # 5 viewsets
-│       ├── urls.py            # ~45 endpoints
+│   ├── schedule/               # Sprint 5 - Emploi du temps
+│   │   ├── models.py          # Batiment, Salle, Creneau, Cours, ConflitSalle
+│   │   ├── serializers.py     # 10 serializers
+│   │   ├── views.py           # 5 viewsets
+│   │   ├── urls.py            # ~45 endpoints
+│   │   └── admin.py           # Config admin
+│   │
+│   └── library/                # Sprint 6 - Bibliothèque ✨ NOUVEAU
+│       ├── models.py          # CategoriesLivre, Livre, Emprunt
+│       ├── serializers.py     # 7 serializers
+│       ├── views.py           # 3 viewsets
+│       ├── urls.py            # ~30 endpoints
 │       └── admin.py           # Config admin
 │
 ├── media/                       # Fichiers uploadés (photos, CV)
@@ -226,7 +370,7 @@ University_Management/
 ### Prérequis
 
 - Python 3.13+
-- PostgreSQL 16+
+- PostgreSQL 17+
 - Git
 
 ### Étapes d'installation
@@ -286,7 +430,7 @@ JWT_ACCESS_TOKEN_LIFETIME=60
 JWT_REFRESH_TOKEN_LIFETIME=7
 
 # CORS SETTINGS
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 
 # TIMEZONE & LANGUAGE
 TIME_ZONE=Africa/Douala
@@ -311,7 +455,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Le serveur sera accessible sur : **http://localhost:8000 ou http://127.0.0.1:8000**
+Le serveur sera accessible sur : **http://localhost:8000**
 
 ---
 
@@ -321,29 +465,25 @@ Le serveur sera accessible sur : **http://localhost:8000 ou http://127.0.0.1:800
 
 - **Backend Django :** 8000
 - **PostgreSQL :** 5432
-- **Frontend (futur) :** 3000
+- **Frontend (futur) :** 5173
 
 ---
 
 ## 📖 Utilisation
 
 ### Interface d'administration
-
-Accédez à l'interface d'administration Django :
 ```
-http://localhost:8000/admin/ ou http://127.0.0.1:8000/admin/
+http://localhost:8000/admin/
 ```
 
 ### Documentation API (Swagger)
-
-Documentation interactive de l'API :
 ```
-http://localhost:8000/api/docs/ ou http://127.0.0.1:8000/api/docs/
+http://localhost:8000/api/docs/
 ```
 
 ### Schéma OpenAPI
 ```
-http://localhost:8000/api/schema/ ou http://127.0.0.1:8000/api/schema
+http://localhost:8000/api/schema/
 ```
 
 ---
@@ -352,13 +492,13 @@ http://localhost:8000/api/schema/ ou http://127.0.0.1:8000/api/schema
 
 ### Authentification
 
-Toutes les requêtes API (sauf `/api/core/auth/login/`) nécessitent un token JWT.
-
 #### Obtenir un token
 ```bash
-curl -X POST http://localhost:8000/api/core/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "Admin123!"}'
+POST /api/auth/login/
+{
+  "username": "admin",
+  "password": "Admin123!"
+}
 ```
 
 **Réponse :**
@@ -376,122 +516,69 @@ curl -X POST http://localhost:8000/api/core/auth/login/ \
 
 #### Utiliser le token
 ```bash
-curl -X GET http://localhost:8000/api/facultes/ \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+GET /api/facultes/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Endpoints principaux
 
-#### **Authentification**
+#### **Sprint 1 : Core**
 ```
-POST /api/auth/login/              # Connexion
-POST /api/auth/refresh/            # Rafraîchir le token
-```
-
-#### **Utilisateurs (Sprint 1)**
-```
-GET  /api/users/                   # Liste des utilisateurs
-POST /api/users/                   # Créer un utilisateur
-GET  /api/users/me/                # Utilisateur connecté
-POST /api/users/{id}/change-password/  # Changer mot de passe
-GET  /api/roles/                   # Gestion des rôles
-GET  /api/permissions/             # Gestion des permissions
+POST /api/auth/login/
+POST /api/auth/refresh/
+GET  /api/users/
+GET  /api/users/me/
+GET  /api/roles/
+GET  /api/permissions/
 ```
 
-#### **Structure académique (Sprint 2)**
+#### **Sprint 2 : Academic**
 ```
-GET  /api/annees-academiques/      # Années académiques
-POST /api/annees-academiques/{id}/activate/  # Activer une année
-GET  /api/facultes/                # Facultés
-GET  /api/facultes/{id}/statistiques/  # Statistiques d'une faculté
-GET  /api/departements/            # Départements
-GET  /api/filieres/                # Filières
-GET  /api/matieres/                # Matières
+GET  /api/annees-academiques/
+GET  /api/facultes/
+GET  /api/departements/
+GET  /api/filieres/
+GET  /api/matieres/
 ```
 
-#### **Étudiants et Enseignants (Sprint 3)**
+#### **Sprint 3 : Students**
 ```
-GET  /api/etudiants/               # Liste des étudiants
-POST /api/etudiants/               # Créer un étudiant
-GET  /api/etudiants/{id}/inscriptions/  # Inscriptions d'un étudiant
-GET  /api/etudiants/statistiques/  # Statistiques étudiants
-
-GET  /api/enseignants/             # Liste des enseignants
-GET  /api/enseignants/{id}/charge-horaire/  # Charge horaire
-GET  /api/enseignants/statistiques/  # Statistiques enseignants
-
-GET  /api/inscriptions/            # Inscriptions
-POST /api/inscriptions/{id}/payer/  # Enregistrer un paiement
-
-GET  /api/attributions/            # Attributions enseignants
+GET  /api/etudiants/
+GET  /api/enseignants/
+GET  /api/inscriptions/
+GET  /api/attributions/
 ```
 
-#### **Évaluations et Notes (Sprint 4)**
+#### **Sprint 4 : Evaluations**
 ```
-GET  /api/types-evaluations/       # Types d'évaluations
-GET  /api/evaluations/             # Évaluations
-POST /api/evaluations/{id}/dupliquer/  # Dupliquer une évaluation
-GET  /api/evaluations/{id}/statistiques/  # Statistiques
-
-GET  /api/notes/                   # Notes
-POST /api/notes/saisie-multiple/   # Saisir plusieurs notes
-GET  /api/notes/par-etudiant/{id}/ # Notes d'un étudiant
-
-GET  /api/resultats/               # Résultats
-POST /api/resultats/calculer-moyenne/  # Calculer moyenne
-GET  /api/resultats/bulletin/{id}/ # Bulletin complet
-
-GET  /api/sessions-deliberation/   # Sessions de délibération
-POST /api/sessions-deliberation/{id}/generer-decisions/  # Générer décisions
-POST /api/sessions-deliberation/{id}/cloturer/  # Clôturer session
-GET  /api/decisions-jury/          # Décisions du jury
+GET  /api/evaluations/
+GET  /api/notes/
+GET  /api/resultats/
+GET  /api/sessions-deliberation/
 ```
 
-#### **Emploi du temps (Sprint 5)**
+#### **Sprint 5 : Schedule**
 ```
-GET  /api/batiments/               # Bâtiments
-GET  /api/batiments/{id}/salles/   # Salles d'un bâtiment
-GET  /api/batiments/statistiques/  # Statistiques
-
-GET  /api/salles/                  # Salles
-GET  /api/salles/{id}/disponibilite/  # Vérifier disponibilité
-GET  /api/salles/disponibles/      # Salles disponibles pour un créneau
-GET  /api/salles/statistiques/     # Statistiques
-
-GET  /api/creneaux/                # Créneaux horaires
-GET  /api/creneaux/par-jour/       # Créneaux groupés par jour
-
-GET  /api/cours/                   # Cours programmés
-POST /api/cours/emploi-du-temps/   # Générer emploi du temps par filière
-GET  /api/cours/par-enseignant/{id}/  # Cours d'un enseignant
-GET  /api/cours/statistiques/      # Statistiques
-
-POST /api/conflits/detecter/       # Détecter conflits automatiquement
-POST /api/conflits/{id}/resoudre/  # Marquer conflit résolu
-GET  /api/conflits/statistiques/   # Statistiques des conflits
+GET  /api/batiments/
+GET  /api/salles/
+GET  /api/creneaux/
+GET  /api/cours/
+GET  /api/conflits/
 ```
 
-### Format des réponses
-
-Toutes les listes sont paginées :
-```json
-{
-  "count": 100,
-  "next": "http://localhost:8000/api/etudiants/?page=2",
-  "previous": null,
-  "results": [...]
-}
+#### **Sprint 6 : Library** ✨ NOUVEAU
 ```
-
-### Codes de statut HTTP
-
-- **200 OK** : Requête réussie
-- **201 Created** : Ressource créée
-- **400 Bad Request** : Données invalides
-- **401 Unauthorized** : Non authentifié
-- **403 Forbidden** : Pas de permission
-- **404 Not Found** : Ressource introuvable
-- **500 Internal Server Error** : Erreur serveur
+GET  /api/library/categories/
+GET  /api/library/livres/
+GET  /api/library/livres/disponibles/
+GET  /api/library/livres/statistiques/
+GET  /api/library/emprunts/
+POST /api/library/emprunts/
+POST /api/library/emprunts/{id}/retour/
+GET  /api/library/emprunts/en_cours/
+GET  /api/library/emprunts/en_retard/
+GET  /api/library/emprunts/statistiques/
+```
 
 ---
 
@@ -499,27 +586,192 @@ Toutes les listes sont paginées :
 
 | Sprint | Titre | Statut | Modules | Endpoints |
 |--------|-------|--------|---------|-----------|
-| 1 | Infrastructure de base | ✅ **Terminé** | User, Role, Permission, AuditLog | ~15 |
-| 2 | Structure académique | ✅ **Terminé** | AnneeAcademique, Faculte, Departement, Filiere, Matiere | ~35 |
-| 3 | Étudiants & Enseignants | ✅ **Terminé** | Etudiant, Enseignant, Inscription, Attribution | ~35 |
-| 4 | Notes & Évaluations | ✅ **Terminé** | TypeEvaluation, Evaluation, Note, Resultat, SessionDeliberation, MembreJury, DecisionJury | ~50 |
-| 5 | Emploi du temps | ✅ **Terminé** | Batiment, Salle, Creneau, Cours, ConflitSalle | ~45 |
-| 6 | Finance avancée | ⏳ **À faire** | Gestion complète des paiements, reçus | - |
-| 7 | Inscriptions en ligne | ⏳ À faire | Portail web pour étudiants | - |
-| 8 | Bibliothèque | ⏳ À faire | Gestion des livres et emprunts | - |
-| 9 | Notifications | ⏳ À faire | Email, SMS, notifications push | - |
-| 10 | Reporting | ⏳ À faire | Statistiques avancées, exports | - |
+| 1 | Infrastructure & Auth | ✅ Terminé | User, Role, Permission | ~25 |
+| 2 | Structure académique | ✅ Terminé | AnneeAcademique, Faculte, Departement, Filiere, Matiere | ~40 |
+| 3 | Étudiants & Enseignants | ✅ Terminé | Etudiant, Enseignant, Inscription, Attribution | ~35 |
+| 4 | Évaluations & Notes | ✅ Terminé | Evaluation, Note, Resultat, Deliberation | ~40 |
+| 5 | Emploi du temps | ✅ Terminé | Batiment, Salle, Creneau, Cours, Conflit | ~45 |
+| 6 | Bibliothèque | ✅ Terminé | Categorie, Livre, Emprunt | ~30 |
+| 7 | Absences & Présences | ⏳ À faire | Presence, Absence, Justificatif | - |
+| 8 | Finance & Scolarité | ⏳ À faire | FraisScolarite, Paiement, Facture, Bourse | - |
+| 9 | Communications | ⏳ À faire | Annonce, Notification, Message | - |
+| 10 | Ressources avancées | ⏳ À faire | Equipement, Reservation, Maintenance | - |
+| 11 | Documents admin | ⏳ À faire | Attestation, Certificat, Releve | - |
+| 12 | Analytics & Reports | ⏳ À faire | Dashboard, Rapport, Export | - |
 
-**Progression globale : 50% (5/10 sprints) | ~180 endpoints créés**
+**Progression globale : 50% (6/12 sprints) | ~215 endpoints créés**
 
 ---
 
-### Variables d'environnement production
-```env
-DEBUG=False
-ALLOWED_HOSTS=votredomaine.com,www.votredomaine.com
-SECRET_KEY=une-cle-tres-secrete-et-longue
-```
+## 🗺️ Roadmap
+
+### Sprint 7 : Absences & Présences (Prochainement)
+**Suivi de l'assiduité des étudiants**
+
+**Fonctionnalités prévues :**
+- Feuilles de présence par cours/créneau
+- Gestion des absences (justifiées/non justifiées)
+- Upload de justificatifs (certificats médicaux, etc.)
+- Calcul automatique du taux de présence
+- Alertes pour absences répétées (> seuil)
+- Statistiques d'assiduité par étudiant/matière
+- Rapports de présence pour enseignants
+
+**Endpoints estimés :** ~25
+
+---
+
+### Sprint 8 : Finance & Scolarité
+**Gestion complète des finances universitaires**
+
+**Fonctionnalités prévues :**
+- Définition des frais de scolarité (par filière, niveau, année)
+- Gestion des tranches de paiement
+- Enregistrement des paiements (espèces, virement, mobile money)
+- Génération automatique de reçus et factures
+- Gestion des bourses et exonérations
+- Suivi des impayés avec relances
+- Statistiques financières (recettes, taux de recouvrement)
+- Tableau de bord financier
+
+**Endpoints estimés :** ~35
+
+---
+
+### Sprint 9 : Communications & Notifications
+**Système de communication intégré**
+
+**Fonctionnalités prévues :**
+- Gestion des annonces et actualités
+- Système de notifications push
+- Notifications par email (SMTP)
+- Notifications par SMS (API Twilio/Nexmo)
+- Messagerie interne entre utilisateurs
+- Alertes système automatiques :
+  - Notes disponibles
+  - Emploi du temps modifié
+  - Absences répétées
+  - Paiements en retard
+  - Livres à rendre
+- Historique des notifications
+
+**Endpoints estimés :** ~30
+
+---
+
+### Sprint 10 : Ressources & Salles Avancées
+**Gestion approfondie des ressources**
+
+**Fonctionnalités prévues :**
+- Gestion des équipements (projecteurs, ordinateurs, laboratoires)
+- Système de réservation de salles
+- Calendrier de disponibilité
+- Gestion de la maintenance (préventive, curative)
+- Suivi de l'état des équipements
+- Historique des interventions
+- Statistiques d'utilisation des ressources
+
+**Endpoints estimés :** ~25
+
+---
+
+### Sprint 11 : Documents Administratifs
+**Génération automatique de documents officiels**
+
+**Fonctionnalités prévues :**
+- Attestations de scolarité (PDF automatique)
+- Relevés de notes officiels
+- Certificats de diplôme
+- Lettres de recommandation
+- Documents justificatifs personnalisables
+- Templates modifiables
+- Signature électronique
+- Archivage sécurisé
+
+**Endpoints estimés :** ~20
+
+---
+
+### Sprint 12 : Rapports & Analytics
+**Business Intelligence universitaire**
+
+**Fonctionnalités prévues :**
+- Tableaux de bord interactifs (directeurs, doyens, admin)
+- Statistiques académiques avancées :
+  - Taux de réussite par filière/année
+  - Évolution des effectifs
+  - Performance des enseignants
+  - Utilisation des ressources
+- Rapports d'activité automatiques
+- Exports multiformats (PDF, Excel, CSV)
+- Graphiques et visualisations (Chart.js)
+- Prédictions et tendances (ML basique)
+
+**Endpoints estimés :** ~30
+
+---
+
+### Sprint 13+ : Frontend React (Phase 2 du projet)
+**Interface utilisateur moderne**
+
+**Technologies :**
+- React 19+ avec TypeScript
+- Tailwind CSS 4+
+- Vite (build tool)
+- React Router 7
+- Recharts (graphiques)
+
+**Modules frontend prévus :**
+- Interface d'authentification
+- Dashboard administrateur
+- Portail étudiant
+- Portail enseignant
+- Gestion académique
+- Bibliothèque en ligne
+- Consultation emploi du temps
+- Messagerie intégrée
+
+---
+
+## 🎯 Métriques du projet
+
+### Actuellement
+- **Lines of Code :** ~15,000+
+- **Models :** 28
+- **Serializers :** 52+
+- **ViewSets :** 29
+- **API Endpoints :** ~215
+- **Admin Interfaces :** 28
+- **Migrations :** 12
+- **Tests unitaires :** 0 (à développer)
+
+### À terme (tous sprints)
+- **API Endpoints estimés :** ~400+
+- **Models estimés :** ~50+
+- **Pages frontend estimées :** ~40+
+
+---
+
+## 🌟 Points forts du système
+
+### **Gestion intelligente des conflits**
+Détection automatique en temps réel des conflits de planning (salle, enseignant, capacité).
+
+### **Validation métier complète**
+Règles métier implémentées à tous les niveaux (emprunts, inscriptions, notes, cours).
+
+### **Génération automatique**
+Matricules, moyennes, emplois du temps, pénalités, décisions de jury.
+
+### **Statistiques en temps réel**
+Chaque module offre des statistiques détaillées pour le pilotage.
+
+### **Traçabilité totale**
+Historique complet des actions via AuditLog et timestamps sur tous les modèles.
+
+### **Scalabilité**
+Architecture modulaire permettant l'ajout facile de nouvelles fonctionnalités.
+
 ---
 
 ## 🤝 Contributeurs
@@ -546,54 +798,22 @@ Pour toute question ou problème :
 
 ## 🔄 Historique des versions
 
-### Version 0.5.0 (Actuelle - Janvier 2026)
-- ✅ Sprint 1 : Infrastructure de base (~15 endpoints)
-- ✅ Sprint 2 : Structure académique (~35 endpoints)
-- ✅ Sprint 3 : Étudiants et Enseignants (~35 endpoints)
-- ✅ Sprint 4 : Notes, Évaluations et Délibérations (~50 endpoints)
-- ✅ Sprint 5 : Emploi du temps et Gestion des Conflits (~45 endpoints)
-- **Total : ~180 endpoints fonctionnels**
+### Version 0.6.0 (Actuelle - Janvier 2026)
+- ✅ Sprint 1 : Infrastructure & Auth (~25 endpoints)
+- ✅ Sprint 2 : Structure académique (~40 endpoints)
+- ✅ Sprint 3 : Étudiants & Enseignants (~35 endpoints)
+- ✅ Sprint 4 : Évaluations & Notes (~40 endpoints)
+- ✅ Sprint 5 : Emploi du temps (~45 endpoints)
+- ✅ Sprint 6 : Bibliothèque (~30 endpoints) ✨ NOUVEAU
+- **Total : ~215 endpoints fonctionnels**
 
 ### Prochaines versions
-- **0.6.0** : Finance avancée
-- **0.7.0** : Inscriptions en ligne
-- **0.8.0** : Bibliothèque
-- **1.0.0** : Version complète (tous les 10 sprints)
+- **0.7.0** : Absences & Présences
+- **0.8.0** : Finance & Scolarité
+- **0.9.0** : Communications
+- **1.0.0** : Version backend complète (12 sprints)
+- **2.0.0** : Version complète avec frontend React
 
 ---
 
-## 🎯 Métriques du projet
-
-- **Lines of Code :** ~12,000+
-- **Models :** 25
-- **Serializers :** 45+
-- **ViewSets :** 26
-- **API Endpoints :** ~180
-- **Admin Interfaces :** 25
-- **Migrations :** 10
-
----
-
-## 🌟 Points forts du système
-
-### **Gestion intelligente des conflits**
-Le système détecte automatiquement 3 types de conflits :
-- Conflit de salle (2 cours au même créneau)
-- Conflit d'enseignant (double programmation)
-- Capacité dépassée (trop d'étudiants)
-
-### **Validation en temps réel**
-Impossible de créer un cours en conflit - le système bloque immédiatement.
-
-### **Génération automatique**
-- Matricules étudiants/enseignants
-- Moyennes et mentions
-- Emplois du temps
-- Détection de conflits
-
-### **Statistiques complètes**
-Chaque module offre des statistiques détaillées pour le pilotage.
-
----
-
-**Fait pour une gestion universitaire moderne**
+**Développé avec ❤️ pour une gestion universitaire moderne et efficace**
