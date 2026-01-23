@@ -28,7 +28,7 @@ University Management System (UMS) est une application web complète pour la ges
 
 ## ✨ Fonctionnalités
 
-### ✅ Fonctionnalités implémentées (Sprints 1-6)
+### ✅ Fonctionnalités implémentées (Sprints 1-7)
 
 #### 🔐 Sprint 1 : Infrastructure de base
 **Authentification et gestion des utilisateurs**
@@ -250,17 +250,95 @@ University Management System (UMS) est une application web complète pour la ges
 - Détection automatique des retards
 - Blocage intelligent des emprunts
 
+
+### ✅ Sprint 7 : Absences & Présences ✨ NOUVEAU
+**Gestion complète de l'assiduité des étudiants**
+
+**Feuilles de présence :**
+- Création automatique de feuilles par cours
+- Génération automatique des enregistrements de présence pour tous les étudiants inscrits
+- Marquage des présences (PRESENT, ABSENT, RETARD)
+- Marquage en masse de plusieurs étudiants en une seule requête
+- Fermeture/verrouillage des feuilles avec recalcul automatique des statistiques
+- Calcul automatique du taux de présence par cours
+- Observations de l'enseignant
+- Statuts : OUVERTE (modifiable), FERMEE (verrouillée), ANNULEE
+
+**Gestion des présences :**
+- Enregistrement individuel de chaque étudiant (statut + heure d'arrivée)
+- Calcul automatique des minutes de retard
+- Marquage des absences justifiées/non justifiées
+- Remarques par étudiant
+- Historique complet des présences par étudiant
+
+**Justificatifs d'absence :**
+- Upload de documents justificatifs (PDF, images)
+- Types : MEDICAL, ADMINISTRATIF, FAMILIAL, AUTRE
+- Workflow de validation :
+  - EN_ATTENTE : Justificatif soumis
+  - VALIDE : Approuvé par l'administration
+  - REJETE : Refusé avec commentaire
+- Validation automatique des absences lors de l'approbation
+- Calcul de la durée couverte (en jours)
+- Tracking complet (date soumission, date traitement)
+- Actions en masse dans l'admin Django
+
+**Actions personnalisées :**
+
+*Feuilles de présence :*
+- `/feuilles-presence/{id}/fermer/` : Verrouiller une feuille
+- `/feuilles-presence/{id}/marquer-presences/` : Marquer plusieurs présences
+- `/feuilles-presence/{id}/liste-presences/` : Liste complète des présences
+- `/feuilles-presence/par-cours/` : Feuilles d'un cours spécifique
+- `/feuilles-presence/statistiques/` : Stats globales
+
+*Présences :*
+- `/presences/par-etudiant/` : Présences d'un étudiant avec stats
+- `/presences/absents/` : Liste des absences (filtre justifié/non justifié)
+- `/presences/retards/` : Liste des retards avec minutes calculées
+- `/presences/taux-assiduite/` : Calcul détaillé du taux d'assiduité
+  - Niveaux : EXCELLENT (≥90%), BON (≥75%), MOYEN (≥60%), FAIBLE (<60%)
+
+*Justificatifs :*
+- `/justificatifs/{id}/valider/` : Valider et marquer absences comme justifiées
+- `/justificatifs/{id}/rejeter/` : Rejeter avec commentaire
+- `/justificatifs/en-attente/` : Justificatifs à traiter
+- `/justificatifs/par-etudiant/` : Justificatifs d'un étudiant
+- `/justificatifs/statistiques/` : Stats complètes (taux validation, délai traitement)
+
+**Statistiques et rapports :**
+- Taux de présence par cours et global
+- Taux d'assiduité par étudiant (avec niveau)
+- Nombre de présents/absents/retards
+- Absences justifiées vs non justifiées
+- Délai moyen de traitement des justificatifs
+- Répartition des justificatifs par type
+
+**Fonctionnalités clés :**
+- Génération automatique des présences à la création de feuille
+- Recalcul automatique des statistiques
+- Validation en masse des justificatifs
+- Calcul intelligent des retards (en minutes)
+- Workflow complet de justification d'absences
+- Historique complet et traçabilité
+
+**Endpoints générés : ~32**
+
+**Modèles :**
+- FeuillePresence
+- Presence
+- JustificatifAbsence
+
 ---
 
-**Total API Endpoints Backend : ~215**
+**Endpoints totaux backend : ~247**
 
 ---
 
-### ⏳ Fonctionnalités à venir (Sprints 7-12)
+### ⏳ Fonctionnalités à venir (Sprints 8-12)
 
 Les 6 prochains sprints couvriront :
 
-- **Sprint 7 :** Absences et présences
 - **Sprint 8 :** Finance et scolarité
 - **Sprint 9 :** Communications et notifications
 - **Sprint 10 :** Ressources et salles avancées
@@ -293,76 +371,6 @@ drf-spectacular==0.27.0
 pillow==10.1.0
 openpyxl==3.1.2
 ```
-
-### Frontend (À venir - Sprint 13+)
-- React.js 19+ + TypeScript
-- Tailwind CSS 4+
-- Vite
-
----
-
-## 🏗️ Architecture
-```
-University_Management/
-│
-├── config/                      # Configuration Django
-│   ├── settings.py             # Paramètres du projet
-│   ├── urls.py                 # URLs principales
-│   └── wsgi.py                 # WSGI config
-│
-├── apps/                        # Applications Django
-│   ├── core/                   # Sprint 1 - Auth & Permissions
-│   │   ├── models.py          # User, Role, Permission, AuditLog
-│   │   ├── serializers.py     # 8 serializers
-│   │   ├── views.py           # 5 viewsets
-│   │   ├── urls.py            # ~25 endpoints
-│   │   └── admin.py           # Config admin
-│   │
-│   ├── academic/               # Sprint 2 - Structure académique
-│   │   ├── models.py          # AnneeAcademique, Faculte, Departement, Filiere, Matiere
-│   │   ├── serializers.py     # 6 serializers
-│   │   ├── views.py           # 5 viewsets
-│   │   ├── urls.py            # ~40 endpoints
-│   │   └── admin.py           # Config admin
-│   │
-│   ├── students/               # Sprint 3 - Étudiants & Enseignants
-│   │   ├── models.py          # Etudiant, Enseignant, Inscription, Attribution
-│   │   ├── serializers.py     # 6 serializers
-│   │   ├── views.py           # 4 viewsets
-│   │   ├── urls.py            # ~35 endpoints
-│   │   └── admin.py           # Config admin
-│   │
-│   ├── evaluations/            # Sprint 4 - Notes & Évaluations
-│   │   ├── models.py          # TypeEvaluation, Evaluation, Note, Resultat
-│   │   │                      # SessionDeliberation, MembreJury, DecisionJury
-│   │   ├── serializers.py     # 10 serializers
-│   │   ├── views.py           # 7 viewsets
-│   │   ├── urls.py            # ~40 endpoints
-│   │   └── admin.py           # Config admin
-│   │
-│   ├── schedule/               # Sprint 5 - Emploi du temps
-│   │   ├── models.py          # Batiment, Salle, Creneau, Cours, ConflitSalle
-│   │   ├── serializers.py     # 10 serializers
-│   │   ├── views.py           # 5 viewsets
-│   │   ├── urls.py            # ~45 endpoints
-│   │   └── admin.py           # Config admin
-│   │
-│   └── library/                # Sprint 6 - Bibliothèque ✨ NOUVEAU
-│       ├── models.py          # CategoriesLivre, Livre, Emprunt
-│       ├── serializers.py     # 7 serializers
-│       ├── views.py           # 3 viewsets
-│       ├── urls.py            # ~30 endpoints
-│       └── admin.py           # Config admin
-│
-├── media/                       # Fichiers uploadés (photos, CV)
-├── staticfiles/                 # Fichiers statiques (CSS, JS)
-├── .env/                        # Environnement virtuel Python
-├── config.env                   # Variables d'environnement
-├── requirements.txt             # Dépendances Python
-├── manage.py                    # Script Django
-└── README.md                    # Ce fichier
-```
-
 ---
 
 ## 🚀 Installation
@@ -583,7 +591,6 @@ GET  /api/library/emprunts/statistiques/
 ---
 
 ## 📅 Sprints du projet
-
 | Sprint | Titre | Statut | Modules | Endpoints |
 |--------|-------|--------|---------|-----------|
 | 1 | Infrastructure & Auth | ✅ Terminé | User, Role, Permission | ~25 |
@@ -592,14 +599,14 @@ GET  /api/library/emprunts/statistiques/
 | 4 | Évaluations & Notes | ✅ Terminé | Evaluation, Note, Resultat, Deliberation | ~40 |
 | 5 | Emploi du temps | ✅ Terminé | Batiment, Salle, Creneau, Cours, Conflit | ~45 |
 | 6 | Bibliothèque | ✅ Terminé | Categorie, Livre, Emprunt | ~30 |
-| 7 | Absences & Présences | ⏳ À faire | Presence, Absence, Justificatif | - |
+| 7 | Absences & Présences | ✅ Terminé | FeuillePresence, Presence, JustificatifAbsence | ~32 |
 | 8 | Finance & Scolarité | ⏳ À faire | FraisScolarite, Paiement, Facture, Bourse | - |
 | 9 | Communications | ⏳ À faire | Annonce, Notification, Message | - |
 | 10 | Ressources avancées | ⏳ À faire | Equipement, Reservation, Maintenance | - |
 | 11 | Documents admin | ⏳ À faire | Attestation, Certificat, Releve | - |
 | 12 | Analytics & Reports | ⏳ À faire | Dashboard, Rapport, Export | - |
 
-**Progression globale : 50% (6/12 sprints) | ~215 endpoints créés**
+**Progression globale : 58% (7/12 sprints) | ~247 endpoints créés**
 
 ---
 
@@ -798,17 +805,17 @@ Pour toute question ou problème :
 
 ## 🔄 Historique des versions
 
-### Version 0.6.0 (Actuelle - Janvier 2026)
+### Version 0.7.0 (Actuelle - Janvier 2026)
 - ✅ Sprint 1 : Infrastructure & Auth (~25 endpoints)
 - ✅ Sprint 2 : Structure académique (~40 endpoints)
 - ✅ Sprint 3 : Étudiants & Enseignants (~35 endpoints)
 - ✅ Sprint 4 : Évaluations & Notes (~40 endpoints)
 - ✅ Sprint 5 : Emploi du temps (~45 endpoints)
-- ✅ Sprint 6 : Bibliothèque (~30 endpoints) ✨ NOUVEAU
-- **Total : ~215 endpoints fonctionnels**
+- ✅ Sprint 6 : Bibliothèque (~30 endpoints)
+- ✅ Sprint 7 : Absences & Présences (~32 endpoints) ✨ NOUVEAU
+- **Total : ~247 endpoints fonctionnels**
 
 ### Prochaines versions
-- **0.7.0** : Absences & Présences
 - **0.8.0** : Finance & Scolarité
 - **0.9.0** : Communications
 - **1.0.0** : Version backend complète (12 sprints)

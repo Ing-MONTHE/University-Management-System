@@ -36,6 +36,9 @@ urlpatterns = [
 
     #API - Module bibliotheque
     path('api/', include('apps.library.urls')),
+
+    #API - Module Presence
+    path('api/', include('apps.attendance.urls')),
 ]
 
 #Servir les fichiers médias en développement
