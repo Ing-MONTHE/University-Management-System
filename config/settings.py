@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.schedule',    #Module Emplois du temps
     'apps.library',     #Module bibliotheque
     'apps.attendance',   #Module presence
+    'apps.finance',   #Module finance
 ]
 
 MIDDLEWARE = [

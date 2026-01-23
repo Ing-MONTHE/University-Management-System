@@ -39,6 +39,9 @@ urlpatterns = [
 
     #API - Module Presence
     path('api/', include('apps.attendance.urls')),
+
+    #API - Module Finance
+    path('api/', include('apps.finance.urls')),
 ]
 
 #Servir les fichiers médias en développement

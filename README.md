@@ -329,9 +329,150 @@ University Management System (UMS) est une application web complète pour la ges
 - Presence
 - JustificatifAbsence
 
+### ✅ Sprint 8 : Finance & Scolarité ✨ NOUVEAU
+**Gestion complète des finances universitaires**
+
+**Frais de scolarité :**
+- Configuration des tarifs par filière, niveau et année académique
+- Montants personnalisables selon les formations
+- Système de tranches de paiement (1 à 12 tranches)
+- Date limite de paiement configurable
+- Activation/désactivation des tarifs
+- Calcul automatique du montant par tranche
+- Statistiques d'utilisation par filière
+
+**Gestion des paiements :**
+- Enregistrement des paiements étudiants
+- Modes de paiement multiples :
+  - Espèces
+  - Virement bancaire
+  - Mobile Money (Orange Money, MTN MoMo)
+  - Chèque
+  - Autre
+- Génération automatique de numéros de reçu (format : REC-YYYY-XXXXXX)
+- Workflow de validation :
+  - EN_ATTENTE : Paiement soumis
+  - VALIDE : Paiement confirmé par l'administration
+  - REJETE : Paiement refusé
+  - ANNULE : Paiement annulé
+- Référence de transaction pour traçabilité
+- Tracking complet (qui a validé, quand)
+- Mise à jour automatique de la facture lors du paiement
+- Validation : montant ≤ solde restant
+
+**Bourses et exonérations :**
+- Types de bourses :
+  - TOTALE : 100% des frais pris en charge
+  - PARTIELLE : Pourcentage des frais (0-100%)
+  - MONTANT_FIXE : Montant fixe déduit
+- Sources de financement :
+  - Gouvernement
+  - Université
+  - Entreprise privée
+  - ONG
+  - Autre
+- Statuts : EN_COURS, SUSPENDUE, TERMINEE, ANNULEE
+- Période de validité (date début/fin)
+- Calcul automatique du montant de réduction
+- Vérification automatique si bourse active
+- Conditions de maintien
+- Référence de décision d'attribution
+- Actions en masse : suspendre/réactiver
+
+**Factures de scolarité :**
+- Génération automatique de factures pour les inscriptions
+- Numérotation unique auto (format : FACT-YYYY-XXXXXX)
+- Calcul automatique :
+  - Montant brut (frais de scolarité)
+  - Montant réduction (bourses actives)
+  - Montant net (brut - réductions)
+  - Montant payé (somme des paiements validés)
+  - Solde restant (net - payé)
+- Statuts automatiques :
+  - IMPAYEE : Aucun paiement
+  - PARTIELLE : Paiements partiels
+  - SOLDEE : Totalement payée
+  - ANNULEE : Facture annulée
+- Détection automatique des retards (échéance dépassée)
+- Calcul du taux de paiement (%)
+- Mise à jour automatique lors des paiements
+
+**Actions personnalisées :**
+
+*Frais de scolarité :*
+- `/frais-scolarite/actifs/` : Frais actuellement actifs
+- `/frais-scolarite/par-filiere/` : Frais d'une filière
+- `/frais-scolarite/par-annee/` : Frais d'une année académique
+- `/frais-scolarite/statistiques/` : Stats globales
+
+*Paiements :*
+- `/paiements/{id}/valider/` : Valider un paiement (enregistre qui et quand)
+- `/paiements/en-attente/` : Paiements à valider
+- `/paiements/par-etudiant/` : Historique des paiements d'un étudiant
+- `/paiements/par-mode/` : Répartition par mode de paiement
+- `/paiements/statistiques/` : Stats financières complètes
+  - Total encaissé
+  - Montant moyen
+  - Paiements du mois
+  - Paiements en attente
+
+*Bourses :*
+- `/bourses/actives/` : Bourses actuellement valides
+- `/bourses/par-etudiant/` : Bourses d'un étudiant
+- `/bourses/par-source/` : Répartition par source de financement
+- `/bourses/{id}/suspendre/` : Suspendre une bourse
+- `/bourses/{id}/reactiver/` : Réactiver une bourse suspendue
+- `/bourses/statistiques/` : Stats par type et source
+
+*Factures :*
+- `/factures/generer/` : Générer automatiquement une facture
+  - Récupère frais de scolarité
+  - Calcule bourses actives
+  - Calcule montant net
+  - Crée la facture
+- `/factures/impayees/` : Factures non payées avec total
+- `/factures/en-retard/` : Factures avec échéance dépassée
+- `/factures/soldees/` : Factures totalement payées
+- `/factures/par-etudiant/` : Toutes les factures d'un étudiant
+- `/factures/statistiques/` : Stats de recouvrement
+  - Montant total à encaisser
+  - Montant total encaissé
+  - **Taux de recouvrement global (%)**
+  - Factures en retard
+  - Répartition par statut
+
+**Statistiques et rapports :**
+- Taux de recouvrement des paiements
+- Répartition des paiements par mode
+- Total encaissé par période
+- Montant moyen des paiements
+- Factures en retard avec montants
+- Répartition des bourses par type et source
+- Nombre d'étudiants par tarif
+- Suivi des impayés
+
+**Fonctionnalités clés :**
+- Génération automatique des numéros (reçus, factures)
+- Workflow complet de validation des paiements
+- Calcul automatique des réductions (bourses)
+- Mise à jour automatique des factures
+- Détection automatique des retards
+- Calcul automatique des soldes et statuts
+- Actions en masse dans l'admin (validation, suspension)
+- Traçabilité complète (qui, quand, combien)
+- Validation métier (montant ≤ solde, bourses selon type)
+
+**Endpoints générés : ~45**
+
+**Modèles :**
+- FraisScolarite
+- Paiement
+- Bourse
+- Facture
+
 ---
 
-**Endpoints totaux backend : ~247**
+**Endpoints totaux backend : ~292**
 
 ---
 
@@ -528,69 +669,10 @@ GET /api/facultes/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### Endpoints principaux
-
-#### **Sprint 1 : Core**
-```
-POST /api/auth/login/
-POST /api/auth/refresh/
-GET  /api/users/
-GET  /api/users/me/
-GET  /api/roles/
-GET  /api/permissions/
-```
-
-#### **Sprint 2 : Academic**
-```
-GET  /api/annees-academiques/
-GET  /api/facultes/
-GET  /api/departements/
-GET  /api/filieres/
-GET  /api/matieres/
-```
-
-#### **Sprint 3 : Students**
-```
-GET  /api/etudiants/
-GET  /api/enseignants/
-GET  /api/inscriptions/
-GET  /api/attributions/
-```
-
-#### **Sprint 4 : Evaluations**
-```
-GET  /api/evaluations/
-GET  /api/notes/
-GET  /api/resultats/
-GET  /api/sessions-deliberation/
-```
-
-#### **Sprint 5 : Schedule**
-```
-GET  /api/batiments/
-GET  /api/salles/
-GET  /api/creneaux/
-GET  /api/cours/
-GET  /api/conflits/
-```
-
-#### **Sprint 6 : Library** ✨ NOUVEAU
-```
-GET  /api/library/categories/
-GET  /api/library/livres/
-GET  /api/library/livres/disponibles/
-GET  /api/library/livres/statistiques/
-GET  /api/library/emprunts/
-POST /api/library/emprunts/
-POST /api/library/emprunts/{id}/retour/
-GET  /api/library/emprunts/en_cours/
-GET  /api/library/emprunts/en_retard/
-GET  /api/library/emprunts/statistiques/
-```
-
 ---
 
 ## 📅 Sprints du projet
+
 | Sprint | Titre | Statut | Modules | Endpoints |
 |--------|-------|--------|---------|-----------|
 | 1 | Infrastructure & Auth | ✅ Terminé | User, Role, Permission | ~25 |
@@ -600,13 +682,13 @@ GET  /api/library/emprunts/statistiques/
 | 5 | Emploi du temps | ✅ Terminé | Batiment, Salle, Creneau, Cours, Conflit | ~45 |
 | 6 | Bibliothèque | ✅ Terminé | Categorie, Livre, Emprunt | ~30 |
 | 7 | Absences & Présences | ✅ Terminé | FeuillePresence, Presence, JustificatifAbsence | ~32 |
-| 8 | Finance & Scolarité | ⏳ À faire | FraisScolarite, Paiement, Facture, Bourse | - |
+| 8 | Finance & Scolarité | ✅ Terminé | FraisScolarite, Paiement, Bourse, Facture | ~45 |
 | 9 | Communications | ⏳ À faire | Annonce, Notification, Message | - |
 | 10 | Ressources avancées | ⏳ À faire | Equipement, Reservation, Maintenance | - |
 | 11 | Documents admin | ⏳ À faire | Attestation, Certificat, Releve | - |
 | 12 | Analytics & Reports | ⏳ À faire | Dashboard, Rapport, Export | - |
 
-**Progression globale : 58% (7/12 sprints) | ~247 endpoints créés**
+**Progression globale : 67% (8/12 sprints) | ~292 endpoints créés**
 
 ---
 
@@ -743,14 +825,13 @@ GET  /api/library/emprunts/statistiques/
 ## 🎯 Métriques du projet
 
 ### Actuellement
-- **Lines of Code :** ~15,000+
-- **Models :** 28
-- **Serializers :** 52+
-- **ViewSets :** 29
-- **API Endpoints :** ~215
-- **Admin Interfaces :** 28
-- **Migrations :** 12
-- **Tests unitaires :** 0 (à développer)
+- **Lines of Code :** ~22,000+
+- **Models :** 35
+- **Serializers :** 74+
+- **ViewSets :** 36
+- **API Endpoints :** ~292
+- **Admin Interfaces :** 35
+- **Migrations :** 14
 
 ### À terme (tous sprints)
 - **API Endpoints estimés :** ~400+
@@ -805,19 +886,19 @@ Pour toute question ou problème :
 
 ## 🔄 Historique des versions
 
-### Version 0.7.0 (Actuelle - Janvier 2026)
+### Version 0.8.0 (Actuelle - Janvier 2026)
 - ✅ Sprint 1 : Infrastructure & Auth (~25 endpoints)
 - ✅ Sprint 2 : Structure académique (~40 endpoints)
 - ✅ Sprint 3 : Étudiants & Enseignants (~35 endpoints)
 - ✅ Sprint 4 : Évaluations & Notes (~40 endpoints)
 - ✅ Sprint 5 : Emploi du temps (~45 endpoints)
 - ✅ Sprint 6 : Bibliothèque (~30 endpoints)
-- ✅ Sprint 7 : Absences & Présences (~32 endpoints) ✨ NOUVEAU
-- **Total : ~247 endpoints fonctionnels**
+- ✅ Sprint 7 : Absences & Présences (~32 endpoints)
+- ✅ Sprint 8 : Finance & Scolarité (~45 endpoints) ✨ NOUVEAU
+- **Total : ~292 endpoints fonctionnels**
 
 ### Prochaines versions
-- **0.8.0** : Finance & Scolarité
-- **0.9.0** : Communications
+- **0.9.0** : Communications & Notifications
 - **1.0.0** : Version backend complète (12 sprints)
 - **2.0.0** : Version complète avec frontend React
 
