@@ -6,51 +6,15 @@ from .views import (
     EmpruntViewSet,
 )
 
-# CONFIGURATION DU ROUTER
-"""
-Le DefaultRouter de Django REST Framework génère automatiquement
-les URLs pour toutes les actions standard d'un ViewSet :
-- list (GET /)
-- create (POST /)
-- retrieve (GET /{pk}/)
-- update (PUT /{pk}/)
-- partial_update (PATCH /{pk}/)
-- destroy (DELETE /{pk}/)
-
-Il génère aussi automatiquement les URLs pour les actions custom
-décorées avec @action.
-"""
-
+# ROUTER
 router = DefaultRouter()
 
-# ENREGISTREMENT DES VIEWSETS
+# Enregistrer les ViewSets
+router.register(r'categories', CategoriesLivreViewSet, basename='categorie')
+router.register(r'livres', LivreViewSet, basename='livre')
+router.register(r'emprunts', EmpruntViewSet, basename='emprunt')
 
-# Catégories de livres
-# Génère : /categories/, /categories/{id}/, /categories/{id}/livres/
-router.register(
-    r'categories',
-    CategoriesLivreViewSet,
-    basename='categorie'
-)
-
-# Livres
-# Génère : /livres/, /livres/{id}/, /livres/disponibles/, /livres/statistiques/, etc.
-router.register(
-    r'livres',
-    LivreViewSet,
-    basename='livre'
-)
-
-# Emprunts
-# Génère : /emprunts/, /emprunts/{id}/, /emprunts/{id}/retour/, /emprunts/en_cours/, etc.
-router.register(
-    r'emprunts',
-    EmpruntViewSet,
-    basename='emprunt'
-)
-
-# PATTERNS D'URLS
+# URL PATTERNS
 urlpatterns = [
-    # Inclure toutes les URLs générées par le router
     path('', include(router.urls)),
 ]

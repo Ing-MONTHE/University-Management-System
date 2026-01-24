@@ -6,38 +6,15 @@ from .views import (
     JustificatifAbsenceViewSet,
 )
 
-# CONFIGURATION DU ROUTER
+# ROUTER
 router = DefaultRouter()
 
-# =========================================
-# ENREGISTREMENT DES VIEWSETS
-# =========================================
+# Enregistrer les ViewSets
+router.register(r'feuilles-presence', FeuillePresenceViewSet, basename='feuille-presence')
+router.register(r'presences', PresenceViewSet, basename='presence')
+router.register(r'justificatifs', JustificatifAbsenceViewSet, basename='justificatif')
 
-# Feuilles de présence
-# Génère : /feuilles-presence/, /feuilles-presence/{id}/, etc.
-router.register(
-    r'feuilles-presence',
-    FeuillePresenceViewSet,
-    basename='feuille-presence'
-)
-
-# Présences individuelles
-# Génère : /presences/, /presences/{id}/, etc.
-router.register(
-    r'presences',
-    PresenceViewSet,
-    basename='presence'
-)
-
-# Justificatifs d'absence
-# Génère : /justificatifs/, /justificatifs/{id}/, etc.
-router.register(
-    r'justificatifs',
-    JustificatifAbsenceViewSet,
-    basename='justificatif'
-)
-
-# PATTERNS D'URLS
+# URL PATTERNS
 urlpatterns = [
     # Inclure toutes les URLs générées par le router
     path('', include(router.urls)),

@@ -45,6 +45,15 @@ urlpatterns = [
 
     #API - Module Communication
     path('api/', include('apps.communications.urls')),
+
+    #API - Module resources
+    path('api/', include('apps.resources.urls')),
+
+    #API - Module documents
+    path('api/', include('apps.documents.urls')),
+
+    #API - Module d'analytics
+    path('api/', include('apps.analytics.urls')),
 ]
 
 #Servir les fichiers médias en développement

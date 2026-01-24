@@ -8,55 +8,17 @@ from .views import (
     StatistiquesViewSet,
 )
 
-# CONFIGURATION DU ROUTER
-
+# ROUTER
 router = DefaultRouter()
 
-# ENREGISTREMENT DES VIEWSETS
+# Enregistrer les ViewSets
+router.register(r'annonces', AnnonceViewSet, basename='annonce')
+router.register(r'notifications', NotificationViewSet, basename='notification')
+router.register(r'messages', MessageViewSet, basename='message')
+router.register(r'preferences', PreferenceNotificationViewSet, basename='preference')
+router.register(r'statistiques', StatistiquesViewSet, basename='statistique')
 
-# Annonces
-# Génère : /annonces/, /annonces/{id}/, etc.
-router.register(
-    r'annonces',
-    AnnonceViewSet,
-    basename='annonce'
-)
-
-# Notifications
-# Génère : /notifications/, /notifications/{id}/, etc.
-router.register(
-    r'notifications',
-    NotificationViewSet,
-    basename='notification'
-)
-
-# Messages
-# Génère : /messages/, /messages/{id}/, etc.
-router.register(
-    r'messages',
-    MessageViewSet,
-    basename='message'
-)
-
-# Préférences de notification
-# Génère : /preferences/, /preferences/{id}/, etc.
-router.register(
-    r'preferences',
-    PreferenceNotificationViewSet,
-    basename='preference'
-)
-
-# Statistiques
-# Génère : /statistiques/
-router.register(
-    r'statistiques',
-    StatistiquesViewSet,
-    basename='statistique'
-)
-
-# PATTERNS D'URLS
-
+# URL PATTERNS
 urlpatterns = [
-    # Inclure toutes les URLs générées par le router
     path('', include(router.urls)),
 ]
