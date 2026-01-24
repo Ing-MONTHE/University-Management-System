@@ -470,11 +470,152 @@ University Management System (UMS) est une application web complète pour la ges
 - Bourse
 - Facture
 
+### ✅ Sprint 9 : Communications & Notifications ✨ NOUVEAU
+**Système complet de communication intégré**
+
+**Annonces et actualités :**
+- Création et gestion d'annonces officielles
+- Types d'annonces :
+  - GENERALE : Pour tout le monde
+  - ETUDIANTS : Étudiants uniquement
+  - ENSEIGNANTS : Enseignants uniquement
+  - ADMINISTRATION : Personnel administratif
+  - URGENTE : Annonces urgentes (priorité haute)
+- Workflow de publication :
+  - BROUILLON : Annonce en cours de rédaction
+  - PUBLIEE : Annonce visible par le public cible
+  - ARCHIVEE : Annonce archivée (non visible)
+- Système de priorité (annonces mises en avant)
+- Date d'expiration configurable
+- Pièces jointes (PDF, images, documents)
+- Publication et archivage en un clic
+- Détection automatique des annonces expirées
+
+**Système de notifications :**
+- Création manuelle ou automatique de notifications
+- Types de notifications :
+  - INFO : Information générale
+  - SUCCES : Confirmation d'action réussie
+  - ALERTE : Alerte importante
+  - ERREUR : Problème à corriger
+- Canaux de diffusion :
+  - APP : Notification dans l'application (push)
+  - EMAIL : Notification par email
+  - SMS : Notification par SMS
+- Envoi en masse à plusieurs utilisateurs
+- Marquage lu/non lu automatique
+- Lien de redirection optionnel
+- Tracking complet (envoyée, lue, date)
+- Notifications personnalisées par utilisateur
+
+**Messagerie interne :**
+- Communication privée entre utilisateurs
+- Envoi de messages avec pièces jointes
+- Système de réponses (fils de discussion)
+- Boîte de réception et messages envoyés
+- Marquage lu/non lu
+- Archivage des messages
+- Conversation complète (vue récursive du fil)
+- Validation : impossible de s'envoyer un message à soi-même
+- Détection automatique des réponses
+
+**Préférences de notification :**
+- Personnalisation par utilisateur
+- Préférences par type d'événement :
+  - Nouvelles notes
+  - Absences
+  - Paiements
+  - Bibliothèque (retours)
+  - Emploi du temps
+  - Annonces
+  - Nouveaux messages
+- Préférences par canal :
+  - Activer/désactiver email
+  - Activer/désactiver SMS
+  - Activer/désactiver push (app)
+- Fréquence d'envoi :
+  - IMMEDIAT : Notification instantanée
+  - QUOTIDIEN : Digest quotidien
+  - HEBDOMADAIRE : Digest hebdomadaire
+- Création automatique des préférences par défaut
+- Mise à jour partielle des préférences
+
+**Actions personnalisées :**
+
+*Annonces :*
+- `/annonces/{id}/publier/` : Publier une annonce (change statut + date)
+- `/annonces/{id}/archiver/` : Archiver une annonce
+- `/annonces/publiees/` : Annonces publiées et non expirées
+- `/annonces/urgentes/` : Annonces urgentes uniquement
+- `/annonces/par-type/` : Filtrer par type de public
+- `/annonces/statistiques/` : Stats globales (total, publiées, par type)
+
+*Notifications :*
+- `/notifications/{id}/marquer-lue/` : Marquer comme lue
+- `/notifications/marquer-toutes-lues/` : Marquer toutes comme lues
+- `/notifications/envoyer-masse/` : Envoyer à plusieurs utilisateurs
+- `/notifications/non-lues/` : Liste des non lues
+- `/notifications/mes-notifications/` : Notifications de l'utilisateur connecté
+- `/notifications/statistiques/` : Stats (total, par type, par canal)
+
+*Messages :*
+- `/messages/{id}/marquer-lu/` : Marquer comme lu
+- `/messages/{id}/archiver/` : Archiver le message
+- `/messages/{id}/desarchivier/` : Désarchiver le message
+- `/messages/{id}/repondre/` : Répondre au message (crée réponse liée)
+- `/messages/boite-reception/` : Messages reçus (avec compteur non lus)
+- `/messages/messages-envoyes/` : Messages envoyés
+- `/messages/non-lus/` : Messages non lus
+- `/messages/archives/` : Messages archivés
+- `/messages/conversation/` : Fil de discussion complet (récursif)
+- `/messages/statistiques/` : Stats de l'utilisateur
+
+*Préférences :*
+- `/preferences/mes-preferences/` : Récupère préférences (crée si inexistantes)
+- `/preferences/mettre-a-jour/` : Met à jour les préférences (partiel)
+
+*Statistiques :*
+- `/statistiques/utilisateur/` : Stats de l'utilisateur connecté
+  - Notifications non lues
+  - Messages non lus
+  - Totaux
+- `/statistiques/globales/` : Stats système complètes
+  - Total annonces, notifications, messages
+  - Utilisateurs avec préférences
+
+**Statistiques et rapports :**
+- Compteur de notifications non lues
+- Compteur de messages non lus
+- Répartition des notifications par type et canal
+- Répartition des annonces par type
+- Statistiques utilisateur personnalisées
+- Statistiques globales du système
+
+**Fonctionnalités clés :**
+- Assignation automatique auteur/expéditeur depuis utilisateur connecté
+- Création automatique des préférences par défaut
+- Marquage automatique des dates (lecture, publication, envoi)
+- Fil de discussion récursif (messages et réponses)
+- Validation métier (expéditeur ≠ destinataire, dates expiration)
+- Actions en masse dans l'admin (publier, archiver, marquer lu)
+- Envoi de notifications en masse à plusieurs utilisateurs
+- Détection automatique des annonces expirées
+- Tracking complet de tous les événements
+
+**Endpoints générés : ~50**
+
+**Modèles :**
+- Annonce
+- Notification
+- Message
+- PreferenceNotification
+
 ---
 
-**Endpoints totaux backend : ~292**
+**Endpoints totaux backend : ~342**
 
 ---
+
 
 ### ⏳ Fonctionnalités à venir (Sprints 8-12)
 
@@ -683,12 +824,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | 6 | Bibliothèque | ✅ Terminé | Categorie, Livre, Emprunt | ~30 |
 | 7 | Absences & Présences | ✅ Terminé | FeuillePresence, Presence, JustificatifAbsence | ~32 |
 | 8 | Finance & Scolarité | ✅ Terminé | FraisScolarite, Paiement, Bourse, Facture | ~45 |
-| 9 | Communications | ⏳ À faire | Annonce, Notification, Message | - |
+| 9 | Communications | ✅ Terminé | Annonce, Notification, Message, PreferenceNotification | ~50 |
 | 10 | Ressources avancées | ⏳ À faire | Equipement, Reservation, Maintenance | - |
 | 11 | Documents admin | ⏳ À faire | Attestation, Certificat, Releve | - |
 | 12 | Analytics & Reports | ⏳ À faire | Dashboard, Rapport, Export | - |
 
-**Progression globale : 67% (8/12 sprints) | ~292 endpoints créés**
+**Progression globale : 75% (9/12 sprints) | ~342 endpoints créés**
 
 ---
 
@@ -825,13 +966,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## 🎯 Métriques du projet
 
 ### Actuellement
-- **Lines of Code :** ~22,000+
-- **Models :** 35
-- **Serializers :** 74+
-- **ViewSets :** 36
-- **API Endpoints :** ~292
-- **Admin Interfaces :** 35
-- **Migrations :** 14
+- **Lines of Code :** ~26,000+
+- **Models :** 39
+- **Serializers :** 88+
+- **ViewSets :** 41
+- **API Endpoints :** ~342
+- **Admin Interfaces :** 39
+- **Migrations :** 15
 
 ### À terme (tous sprints)
 - **API Endpoints estimés :** ~400+
@@ -886,7 +1027,7 @@ Pour toute question ou problème :
 
 ## 🔄 Historique des versions
 
-### Version 0.8.0 (Actuelle - Janvier 2026)
+### Version 0.9.0 (Actuelle - Janvier 2026)
 - ✅ Sprint 1 : Infrastructure & Auth (~25 endpoints)
 - ✅ Sprint 2 : Structure académique (~40 endpoints)
 - ✅ Sprint 3 : Étudiants & Enseignants (~35 endpoints)
@@ -894,11 +1035,13 @@ Pour toute question ou problème :
 - ✅ Sprint 5 : Emploi du temps (~45 endpoints)
 - ✅ Sprint 6 : Bibliothèque (~30 endpoints)
 - ✅ Sprint 7 : Absences & Présences (~32 endpoints)
-- ✅ Sprint 8 : Finance & Scolarité (~45 endpoints) ✨ NOUVEAU
-- **Total : ~292 endpoints fonctionnels**
+- ✅ Sprint 8 : Finance & Scolarité (~45 endpoints)
+- ✅ Sprint 9 : Communications & Notifications (~50 endpoints) ✨ NOUVEAU
+- **Total : ~342 endpoints fonctionnels**
 
 ### Prochaines versions
-- **0.9.0** : Communications & Notifications
+- **0.10.0** : Ressources avancées
+- **0.11.0** : Documents administratifs
 - **1.0.0** : Version backend complète (12 sprints)
 - **2.0.0** : Version complète avec frontend React
 

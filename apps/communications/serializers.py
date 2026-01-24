@@ -276,7 +276,7 @@ class NotificationMasseSerializer(serializers.Serializer):
         help_text="Liste des IDs des utilisateurs destinataires"
     )
     titre = serializers.CharField(max_length=200)
-    message = serializers.TextField()
+    message = serializers.DictField()
     type_notification = serializers.ChoiceField(
         choices=Notification.TypeNotification.choices,
         default='INFO'
