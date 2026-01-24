@@ -21,7 +21,6 @@ from .serializers import (
     PreferenceNotificationUpdateSerializer,
     StatistiquesUtilisateurSerializer,
 )
-from apps.core.models import User
 
 # VIEWSET : ANNONCES
 class AnnonceViewSet(viewsets.ModelViewSet):

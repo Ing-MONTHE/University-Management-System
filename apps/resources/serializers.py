@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.utils import timezone
-from decimal import Decimal
 from .models import Equipement, Reservation, ReservationEquipement, Maintenance
 
 # SERIALIZER : ÉQUIPEMENT (LISTE)

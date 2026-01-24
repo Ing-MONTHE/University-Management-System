@@ -4,7 +4,6 @@ Contient : Batiment, Salle, Creneau, Cours, ConflitSalle
 """
 
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from apps.academic.models import Matiere, AnneeAcademique
 from apps.students.models import Enseignant, Filiere
@@ -204,7 +203,7 @@ class Creneau(models.Model):
     
     def get_duree_minutes(self):
         """Durée du créneau en minutes."""
-        from datetime import datetime, timedelta
+        from datetime import datetime
         debut = datetime.combine(datetime.today(), self.heure_debut)
         fin = datetime.combine(datetime.today(), self.heure_fin)
         duree = fin - debut

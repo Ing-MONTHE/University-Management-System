@@ -3,7 +3,6 @@
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.utils import timezone
 
 # MODÈLE ANNEE ACADEMIQUE
 class AnneeAcademique(models.Model):

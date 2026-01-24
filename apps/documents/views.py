@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q, Count
+from django.db.models import Count
 from django.utils import timezone
 from django.http import HttpResponse
 
@@ -11,7 +11,6 @@ from .serializers import (
     DocumentListSerializer,
     DocumentDetailSerializer,
     DocumentCreateSerializer,
-    DocumentGenerationSerializer,
     TemplateDocumentListSerializer,
     TemplateDocumentDetailSerializer,
     TemplateDocumentCreateSerializer,
@@ -190,7 +189,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         # Pour cette démo, on sauvegarde juste le HTML
         from django.core.files.base import ContentFile
-        import os
         
         filename = f"{document.numero_document}.html"
         document.fichier.save(filename, ContentFile(html_content.encode('utf-8')))

@@ -1,7 +1,6 @@
 # Configuration de l'interface d'administration pour étudiants/enseignants
 
 from django.contrib import admin
-from django.utils.html import format_html
 from .models import Etudiant, Enseignant, Inscription, Attribution
 
 # ETUDIANT ADMIN

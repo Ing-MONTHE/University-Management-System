@@ -4,7 +4,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import EmailValidator
-from django.utils import timezone
 import uuid
 
 # MODÈLE DE BASE ABSTRAIT

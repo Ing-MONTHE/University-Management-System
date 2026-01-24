@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count, Q, Avg
+from django.db.models import Count, Avg
 from django.http import HttpResponse
 
 from .models import Batiment, Salle, Creneau, Cours, ConflitSalle
@@ -17,8 +17,7 @@ from .serializers import (
     ConflitSalleSerializer,
     DetectionConflitsSerializer,
     ResolutionConflitSerializer,
-    EmploiDuTempsSerializer,
-    StatistiquesEmploiDuTempsSerializer
+    EmploiDuTempsSerializer
 )
 from apps.academic.models import AnneeAcademique
 from .utils import (

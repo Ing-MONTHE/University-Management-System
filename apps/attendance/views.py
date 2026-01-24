@@ -2,9 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q, Count, Avg, Sum
-from django.utils import timezone
-from datetime import timedelta
+from django.db.models import Count, Avg, Sum
 
 from .models import FeuillePresence, Presence, JustificatifAbsence
 from .serializers import (
@@ -16,7 +14,6 @@ from .serializers import (
     JustificatifAbsenceListSerializer,
     JustificatifAbsenceDetailSerializer,
     JustificatifAbsenceCreateSerializer,
-    JustificatifValidationSerializer,
 )
 
 # VIEWSET : FEUILLES DE PRÉSENCE

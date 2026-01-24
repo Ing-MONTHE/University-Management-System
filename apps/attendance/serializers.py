@@ -2,7 +2,6 @@ from rest_framework import serializers
 from django.utils import timezone
 from .models import FeuillePresence, Presence, JustificatifAbsence
 from apps.students.models import Etudiant
-from apps.schedule.models import Cours
 
 # SERIALIZER : FEUILLE DE PRÉSENCE (LISTE)
 class FeuillePresenceListSerializer(serializers.ModelSerializer):

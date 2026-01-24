@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Avg, Count, Q, Sum
+from django.db.models import Avg, Sum
 
 from .models import SessionDeliberation, TypeEvaluation, Evaluation, Note, Resultat, MembreJury, DecisionJury
 from .serializers import (

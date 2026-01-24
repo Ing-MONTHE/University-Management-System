@@ -1,9 +1,6 @@
 from rest_framework import serializers
-from django.utils import timezone
-from decimal import Decimal
 from .models import FraisScolarite, Paiement, Bourse, Facture
-from apps.students.models import Etudiant, Inscription
-from apps.academic.models import Filiere, AnneeAcademique
+from apps.students.models import Inscription
 
 # SERIALIZER : FRAIS DE SCOLARITÉ (LISTE)
 class FraisScolariteListSerializer(serializers.ModelSerializer):

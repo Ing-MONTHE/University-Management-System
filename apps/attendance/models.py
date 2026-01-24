@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.core.models import BaseModel
 from apps.students.models import Etudiant
 from apps.schedule.models import Cours
@@ -215,7 +214,7 @@ class Presence(BaseModel):
         if self.statut != 'RETARD' or not self.heure_arrivee:
             return 0
         
-        from datetime import datetime, timedelta
+        from datetime import datetime
         
         # Convertir les heures en datetime pour calculer la différence
         debut = datetime.combine(datetime.today(), self.feuille_presence.heure_debut)

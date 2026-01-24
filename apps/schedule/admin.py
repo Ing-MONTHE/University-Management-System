@@ -2,14 +2,11 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from django.db.models import Count
 from .models import Batiment, Salle, Creneau, Cours, ConflitSalle
 from django.http import HttpResponse
 from .utils import (
     EmploiDuTempsPDF,
-    EmploiDuTempsExcel,
-    ConflitsPDF,
-    PlanningEnseignantPDF
+    ConflitsPDF
 )
 
 # BATIMENT ADMIN
@@ -262,7 +259,6 @@ class CoursAdmin(admin.ModelAdmin):
     
     def exporter_selection_pdf(self, request, queryset):
         """Exporter la sélection en PDF."""
-        from apps.academic.models import AnneeAcademique
         
         # Grouper par filière
         filiere = queryset.first().filiere if queryset.exists() else None

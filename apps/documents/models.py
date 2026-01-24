@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.validators import MinValueValidator
 from apps.core.models import BaseModel, User
 from apps.students.models import Etudiant, Inscription
 from apps.evaluations.models import Resultat

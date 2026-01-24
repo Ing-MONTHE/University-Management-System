@@ -3,7 +3,7 @@
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db.models import Avg, Sum, Count
+from django.db.models import Avg
 from apps.academic.models import Matiere, AnneeAcademique
 from apps.students.models import Etudiant
 
