@@ -245,24 +245,18 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 # LOGIN SERIALIZER (JWT)
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    # Pour la connexion JWT.
-    # Retourne les tokens + infos utilisateur.
+    """
+    Serializer JWT personnalisé qui retourne aussi les infos utilisateur
+    """
     
     def validate(self, attrs):
-        # Valider et enrichir la réponse.
+        # Appeler la validation de base (génère les tokens)
         data = super().validate(attrs)
         
-        # Ajouter les infos utilisateur
-        user = self.user
-        data['user'] = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'full_name': user.get_full_name(),
-            'is_staff': user.is_staff,
-            'is_superuser': user.is_superuser,
-            'roles': [role.name for role in user.roles.all()],
-            'permissions': list(user.get_full_name() if hasattr(user, 'get_full_name') else [])
-        }
+        # Ajouter les infos utilisateur avec UserSerializer
+        user_data = UserSerializer(self.user).data
+        
+        # Retourner tokens + user
+        data['user'] = user_data
         
         return data
