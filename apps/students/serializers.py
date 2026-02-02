@@ -1,5 +1,6 @@
 # Sérialisation des modèles étudiants/enseignants
 
+import datetime
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Etudiant, Enseignant, Inscription, Attribution
@@ -302,3 +303,189 @@ class AttributionSerializer(serializers.ModelSerializer):
             'volume_horaire_assigne', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+class EtudiantListSerializer(serializers.ModelSerializer):
+    """Serializer pour la liste des étudiants (lecture seule)"""
+    
+    nom = serializers.CharField(source='user.last_name', read_only=True)
+    prenom = serializers.CharField(source='user.first_name', read_only=True)
+    email = serializers.EmailField(source='email_personnel', read_only=True)
+    sexe_display = serializers.CharField(source='get_sexe_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    photo_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Etudiant
+        fields = [
+            'id', 'matricule', 'nom', 'prenom', 'sexe', 'sexe_display',
+            'date_naissance', 'lieu_naissance', 'nationalite', 
+            'telephone', 'email', 'email_personnel', 'adresse', 'ville', 'pays',
+            'photo', 'photo_url', 'tuteur_nom', 'tuteur_telephone', 'tuteur_email',
+            'statut', 'statut_display', 'created_at', 'updated_at'
+        ]
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
+
+
+class EtudiantCreateSerializer(serializers.Serializer):
+    """Serializer pour créer un étudiant depuis le frontend"""
+    
+    # Données personnelles
+    nom = serializers.CharField(max_length=150)
+    prenom = serializers.CharField(max_length=150)
+    sexe = serializers.ChoiceField(choices=['M', 'F'])
+    date_naissance = serializers.DateField()
+    lieu_naissance = serializers.CharField(max_length=200)
+    nationalite = serializers.CharField(max_length=100, default='Camerounaise')
+    
+    # Contact
+    telephone = serializers.CharField(max_length=20)
+    email = serializers.EmailField()
+    adresse = serializers.CharField(required=False, allow_blank=True)
+    ville = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    pays = serializers.CharField(max_length=100, default='Cameroun')
+    
+    # Tuteur
+    tuteur_nom = serializers.CharField(required=False, allow_blank=True)
+    tuteur_telephone = serializers.CharField(required=False, allow_blank=True)
+    tuteur_email = serializers.EmailField(required=False, allow_blank=True)
+    
+    # Statut
+    statut = serializers.ChoiceField(
+        choices=['ACTIF', 'SUSPENDU', 'DIPLOME', 'EXCLU', 'ABANDONNE'],
+        default='ACTIF'
+    )
+    
+    # Photo (optionnel)
+    photo = serializers.ImageField(required=False, allow_null=True)
+    
+    def validate_email(self, value):
+        """Vérifier que l'email est unique"""
+        if Etudiant.objects.filter(email_personnel=value).exists():
+            raise serializers.ValidationError("Un étudiant avec cet email existe déjà.")
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email est déjà utilisé.")
+        return value
+    
+    def create(self, validated_data):
+        """Créer un étudiant avec son compte utilisateur"""
+        
+        # Extraire les données
+        nom = validated_data['nom']
+        prenom = validated_data['prenom']
+        email = validated_data['email']
+        photo = validated_data.pop('photo', None)
+        
+        # Générer username unique
+        base_username = f"{prenom.lower()}.{nom.lower()}"
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        # Créer l'utilisateur
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=prenom,
+            last_name=nom,
+            password='changeme123'  # Mot de passe par défaut
+        )
+        
+        # Générer matricule unique
+        annee = datetime.now().year
+        matricule = Etudiant.generer_matricule(annee)
+
+        # Créer l'étudiant
+        etudiant = Etudiant.objects.create(
+            user=user,
+            matricule=matricule,
+            date_naissance=validated_data['date_naissance'],
+            lieu_naissance=validated_data['lieu_naissance'],
+            sexe=validated_data['sexe'],
+            nationalite=validated_data.get('nationalite', 'Camerounaise'),
+            telephone=validated_data['telephone'],
+            email_personnel=email,
+            adresse=validated_data.get('adresse', ''),
+            ville=validated_data.get('ville', ''),
+            pays=validated_data.get('pays', 'Cameroun'),
+            tuteur_nom=validated_data.get('tuteur_nom', ''),
+            tuteur_telephone=validated_data.get('tuteur_telephone', ''),
+            tuteur_email=validated_data.get('tuteur_email', ''),
+            statut=validated_data.get('statut', 'ACTIF'),
+            photo=photo
+        )
+        
+        return etudiant
+
+
+class EtudiantUpdateSerializer(serializers.Serializer):
+    """Serializer pour mettre à jour un étudiant"""
+    
+    # Données modifiables
+    date_naissance = serializers.DateField(required=False)
+    lieu_naissance = serializers.CharField(max_length=200, required=False)
+    sexe = serializers.ChoiceField(choices=['M', 'F'], required=False)
+    nationalite = serializers.CharField(max_length=100, required=False)
+    telephone = serializers.CharField(max_length=20, required=False)
+    email_personnel = serializers.EmailField(required=False)
+    adresse = serializers.CharField(required=False, allow_blank=True)
+    ville = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    pays = serializers.CharField(max_length=100, required=False)
+    tuteur_nom = serializers.CharField(required=False, allow_blank=True)
+    tuteur_telephone = serializers.CharField(required=False, allow_blank=True)
+    tuteur_email = serializers.EmailField(required=False, allow_blank=True)
+    statut = serializers.ChoiceField(
+        choices=['ACTIF', 'SUSPENDU', 'DIPLOME', 'EXCLU', 'ABANDONNE'],
+        required=False
+    )
+    
+    def update(self, instance, validated_data):
+        """Mettre à jour l'étudiant"""
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance
+
+
+class EtudiantDetailSerializer(serializers.ModelSerializer):
+    """Serializer détaillé pour un étudiant avec toutes les infos"""
+    
+    user = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+    sexe_display = serializers.CharField(source='get_sexe_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    inscriptions = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Etudiant
+        fields = '__all__'
+    
+    def get_user(self, obj):
+        return {
+            'id': obj.user.id,
+            'username': obj.user.username,
+            'email': obj.user.email,
+            'first_name': obj.user.first_name,
+            'last_name': obj.user.last_name,
+        }
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
+    
+    def get_inscriptions(self, obj):
+        from apps.students.serializers import InscriptionSerializer
+        inscriptions = obj.inscriptions.all()[:5]  # Dernières 5 inscriptions
+        return InscriptionSerializer(inscriptions, many=True, context=self.context).data

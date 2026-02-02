@@ -188,9 +188,22 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://127.0.0.1:5173',
+    'http://localhost:5173',
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# # Autorisation des headers nécessaires
+# CORS_ALLOW_HEADERS = [
+#     'accept',
+#     'accept-encoding',
+#     'authorization',
+#     'content-type',
+#     'dnt',
+#     'origin',
+#     'user-agent',
+#     'x-csrftoken',
+#     'x-requested-with',
+# ]
 
 # MEDIA FILES
 MEDIA_URL = config('MEDIA_URL', default='/media/')
