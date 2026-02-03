@@ -3,6 +3,8 @@
 import datetime
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .models import Enseignant, Attribution
+from apps.academic.models import Departement
 from .models import Etudiant, Enseignant, Inscription, Attribution
 from apps.core.serializers import UserSerializer
 from apps.academic.serializers import (
@@ -489,3 +491,271 @@ class EtudiantDetailSerializer(serializers.ModelSerializer):
         from apps.students.serializers import InscriptionSerializer
         inscriptions = obj.inscriptions.all()[:5]  # Dernières 5 inscriptions
         return InscriptionSerializer(inscriptions, many=True, context=self.context).data
+
+class EnseignantListSerializer(serializers.ModelSerializer):
+    """Serializer simple pour la liste"""
+    
+    nom = serializers.SerializerMethodField()
+    prenom = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+    departement_nom = serializers.SerializerMethodField()
+    grade_display = serializers.CharField(source='get_grade_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    nb_matieres = serializers.SerializerMethodField()
+    charge_horaire = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Enseignant
+        fields = [
+            'id', 'matricule', 'nom', 'prenom', 'sexe', 'date_naissance',
+            'nationalite', 'telephone', 'email', 'email_personnel', 'adresse',
+            'photo', 'photo_url', 'grade', 'grade_display', 'specialite',
+            'departement', 'departement_nom', 'date_embauche', 'statut',
+            'statut_display', 'nb_matieres', 'charge_horaire', 'created_at'
+        ]
+    
+    def get_nom(self, obj):
+        return obj.user.last_name if obj.user else ''
+    
+    def get_prenom(self, obj):
+        return obj.user.first_name if obj.user else ''
+    
+    def get_email(self, obj):
+        return obj.email_personnel or (obj.user.email if obj.user else '')
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+        return None
+    
+    def get_departement_nom(self, obj):
+        return obj.departement.nom if obj.departement else None
+    
+    def get_nb_matieres(self, obj):
+        return Attribution.objects.filter(enseignant=obj).count()
+    
+    def get_charge_horaire(self, obj):
+        from django.db.models import Sum
+        total = Attribution.objects.filter(enseignant=obj).aggregate(
+            total=Sum('volume_horaire_assigne')
+        )['total']
+        return total or 0
+
+
+class EnseignantCreateSerializer(serializers.Serializer):
+    """Serializer pour créer un enseignant"""
+    
+    nom = serializers.CharField(max_length=150)
+    prenom = serializers.CharField(max_length=150)
+    sexe = serializers.ChoiceField(choices=['M', 'F'])
+    date_naissance = serializers.DateField()
+    nationalite = serializers.CharField(max_length=100, default='Camerounaise')
+    telephone = serializers.CharField(max_length=20)
+    email = serializers.EmailField()
+    adresse = serializers.CharField(required=False, allow_blank=True)
+    grade = serializers.ChoiceField(choices=['ASSISTANT', 'MC', 'PROFESSEUR'])
+    specialite = serializers.CharField(max_length=200)
+    departement_id = serializers.IntegerField()
+    date_embauche = serializers.DateField()
+    statut = serializers.ChoiceField(
+        choices=['ACTIF', 'INACTIF', 'EN_CONGE', 'RETIRE'],
+        default='ACTIF'
+    )
+    
+    def validate_email(self, value):
+        if Enseignant.objects.filter(email_personnel=value).exists():
+            raise serializers.ValidationError("Cet email existe déjà.")
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email est déjà utilisé.")
+        return value
+    
+    def create(self, validated_data):
+        from apps.academic.models import Departement
+        
+        nom = validated_data['nom']
+        prenom = validated_data['prenom']
+        email = validated_data['email']
+        departement_id = validated_data.pop('departement_id')
+        
+        # Générer username
+        username = f"{prenom.lower()}.{nom.lower()}"
+        counter = 1
+        base_username = username
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        
+        # Créer user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            first_name=prenom,
+            last_name=nom,
+            password='changeme123'
+        )
+        
+        # Générer matricule
+        annee = datetime.now().year
+        last_matricule = Enseignant.objects.filter(
+            matricule__startswith=f'ENS-{annee}'
+        ).order_by('-matricule').first()
+        
+        if last_matricule:
+            last_number = int(last_matricule.matricule.split('-')[-1])
+            new_number = last_number + 1
+        else:
+            new_number = 1
+        
+        matricule = f'ENS-{annee}-{new_number:03d}'
+        
+        # Créer enseignant
+        enseignant = Enseignant.objects.create(
+            user=user,
+            matricule=matricule,
+            date_naissance=validated_data['date_naissance'],
+            sexe=validated_data['sexe'],
+            nationalite=validated_data.get('nationalite', 'Camerounaise'),
+            telephone=validated_data['telephone'],
+            email_personnel=email,
+            adresse=validated_data.get('adresse', ''),
+            grade=validated_data['grade'],
+            specialite=validated_data['specialite'],
+            departement_id=departement_id,
+            date_embauche=validated_data['date_embauche'],
+            statut=validated_data.get('statut', 'ACTIF')
+        )
+        
+        return enseignant
+
+
+class EnseignantUpdateSerializer(serializers.Serializer):
+    """Serializer pour modifier"""
+    
+    date_naissance = serializers.DateField(required=False)
+    sexe = serializers.ChoiceField(choices=['M', 'F'], required=False)
+    nationalite = serializers.CharField(max_length=100, required=False)
+    telephone = serializers.CharField(max_length=20, required=False)
+    email_personnel = serializers.EmailField(required=False)
+    adresse = serializers.CharField(required=False, allow_blank=True)
+    grade = serializers.ChoiceField(
+        choices=['ASSISTANT', 'MC', 'PROFESSEUR'],
+        required=False
+    )
+    specialite = serializers.CharField(max_length=200, required=False)
+    departement_id = serializers.IntegerField(required=False)
+    date_embauche = serializers.DateField(required=False)
+    statut = serializers.ChoiceField(
+        choices=['ACTIF', 'INACTIF', 'EN_CONGE', 'RETIRE'],
+        required=False
+    )
+    
+    def update(self, instance, validated_data):
+        if 'departement_id' in validated_data:
+            instance.departement_id = validated_data.pop('departement_id')
+        
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        
+        instance.save()
+        return instance
+
+
+class EnseignantDetailSerializer(serializers.ModelSerializer):
+    """Serializer détaillé"""
+    
+    nom = serializers.SerializerMethodField()
+    prenom = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+    cv_url = serializers.SerializerMethodField()
+    departement_nom = serializers.SerializerMethodField()
+    grade_display = serializers.CharField(source='get_grade_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    nb_matieres = serializers.SerializerMethodField()
+    charge_horaire = serializers.SerializerMethodField()
+    nb_etudiants = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Enseignant
+        fields = '__all__'
+    
+    def get_nom(self, obj):
+        return obj.user.last_name if obj.user else ''
+    
+    def get_prenom(self, obj):
+        return obj.user.first_name if obj.user else ''
+    
+    def get_email(self, obj):
+        return obj.email_personnel or (obj.user.email if obj.user else '')
+    
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+        return None
+    
+    def get_cv_url(self, obj):
+        if obj.cv:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.cv.url)
+        return None
+    
+    def get_departement_nom(self, obj):
+        return obj.departement.nom if obj.departement else None
+    
+    def get_nb_matieres(self, obj):
+        return Attribution.objects.filter(enseignant=obj).count()
+    
+    def get_charge_horaire(self, obj):
+        from django.db.models import Sum
+        total = Attribution.objects.filter(enseignant=obj).aggregate(
+            total=Sum('volume_horaire_assigne')
+        )['total']
+        return total or 0
+    
+    def get_nb_etudiants(self, obj):
+        return 0
+
+
+class AttributionDetailSerializer(serializers.ModelSerializer):
+    """Serializer pour attributions"""
+    
+    matiere_details = serializers.SerializerMethodField()
+    annee_academique_details = serializers.SerializerMethodField()
+    type_enseignement_display = serializers.CharField(
+        source='get_type_enseignement_display',
+        read_only=True
+    )
+    
+    class Meta:
+        model = Attribution
+        fields = [
+            'id', 'matiere', 'matiere_details', 'annee_academique',
+            'annee_academique_details', 'type_enseignement',
+            'type_enseignement_display', 'volume_horaire_assigne',
+            'created_at', 'updated_at'
+        ]
+    
+    def get_matiere_details(self, obj):
+        return {
+            'id': obj.matiere.id,
+            'code': obj.matiere.code,
+            'nom': obj.matiere.nom,
+            'credits': obj.matiere.credits,
+            'filiere': {
+                'id': obj.matiere.filiere.id,
+                'nom': obj.matiere.filiere.nom,
+            } if obj.matiere.filiere else None
+        }
+    
+    def get_annee_academique_details(self, obj):
+        return {
+            'id': obj.annee_academique.id,
+            'annee': obj.annee_academique.annee,
+            'libelle': obj.annee_academique.libelle,
+        }

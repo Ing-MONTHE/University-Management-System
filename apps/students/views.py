@@ -20,6 +20,13 @@ from .serializers import (
     EtudiantUpdateSerializer,
     EtudiantDetailSerializer
 )
+from .serializers import (
+    EnseignantListSerializer,
+    EnseignantCreateSerializer,
+    EnseignantUpdateSerializer,
+    EnseignantDetailSerializer,
+    AttributionDetailSerializer
+)
 
 # ETUDIANT VIEWSET
 class EtudiantViewSet(viewsets.ModelViewSet):
@@ -431,14 +438,46 @@ class EnseignantViewSet(viewsets.ModelViewSet):
     """
     
     queryset = Enseignant.objects.select_related('user', 'departement').all()
-    serializer_class = EnseignantSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = EnseignantListSerializer
+    permission_classes = [AllowAny]  # Pour le debug, à changer en [IsAuthenticated] en production
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['departement', 'grade', 'statut', 'sexe']
     search_fields = ['matricule', 'user__first_name', 'user__last_name', 'specialite', 'telephone']
     ordering_fields = ['matricule', 'grade', 'date_embauche', 'created_at']
     ordering = ['-created_at']
+    
+    def get_serializer_class(self):
+        """Choisir le serializer selon l'action"""
+        if self.action == 'create':
+            return EnseignantCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return EnseignantUpdateSerializer
+        elif self.action == 'retrieve':
+            return EnseignantDetailSerializer
+        return EnseignantListSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Créer un enseignant"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        enseignant = serializer.save()
+        
+        # Retourner avec le serializer de liste
+        output_serializer = EnseignantListSerializer(enseignant, context={'request': request})
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        """Mettre à jour un enseignant"""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        enseignant = serializer.save()
+        
+        # Retourner avec le serializer détaillé
+        output_serializer = EnseignantDetailSerializer(enseignant, context={'request': request})
+        return Response(output_serializer.data)
     
     @action(detail=True, methods=['get'], url_path='attributions')
     def attributions(self, request, pk=None):
@@ -449,13 +488,14 @@ class EnseignantViewSet(viewsets.ModelViewSet):
         enseignant = self.get_object()
         attributions = enseignant.attributions.all()
         
-        serializer = AttributionSerializer(attributions, many=True, context={'request': request})
+        serializer = AttributionDetailSerializer(attributions, many=True, context={'request': request})
         
         return Response({
             'enseignant': {
                 'id': enseignant.id,
                 'matricule': enseignant.matricule,
-                'nom_complet': enseignant.user.get_full_name(),
+                'nom': enseignant.user.last_name,
+                'prenom': enseignant.user.first_name,
                 'grade': enseignant.get_grade_display()
             },
             'attributions': serializer.data,
@@ -553,6 +593,69 @@ class EnseignantViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=True, methods=['post'], url_path='upload-cv')
+    def upload_cv(self, request, pk=None):
+        """
+        Upload du CV d'un enseignant.
+        POST /api/enseignants/{id}/upload-cv/
+        """
+        enseignant = self.get_object()
+        
+        if 'cv' not in request.FILES:
+            return Response(
+                {'error': 'Aucun fichier fourni'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        cv_file = request.FILES['cv']
+        
+        # Validation du type de fichier
+        if not cv_file.name.endswith('.pdf'):
+            return Response(
+                {'error': 'Le CV doit être au format PDF'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Sauvegarder le CV
+        enseignant.cv = cv_file
+        enseignant.save()
+        
+        # Retourner l'URL
+        cv_url = request.build_absolute_uri(enseignant.cv.url) if enseignant.cv else None
+        
+        return Response({
+            'message': 'CV uploadé avec succès',
+            'cv_url': cv_url
+        })
+    
+    @action(detail=True, methods=['post'], url_path='upload-photo')
+    def upload_photo(self, request, pk=None):
+        """
+        Upload de la photo d'un enseignant.
+        POST /api/enseignants/{id}/upload-photo/
+        """
+        enseignant = self.get_object()
+        
+        if 'photo' not in request.FILES:
+            return Response(
+                {'error': 'Aucune photo fournie'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        photo_file = request.FILES['photo']
+        
+        # Sauvegarder la photo
+        enseignant.photo = photo_file
+        enseignant.save()
+        
+        # Retourner l'URL
+        photo_url = request.build_absolute_uri(enseignant.photo.url) if enseignant.photo else None
+        
+        return Response({
+            'message': 'Photo uploadée avec succès',
+            'photo_url': photo_url
+        })
 
 # INSCRIPTION VIEWSET
 class InscriptionViewSet(viewsets.ModelViewSet):
