@@ -259,6 +259,12 @@ class Enseignant(models.Model):
         verbose_name="Sexe"
     )
     
+    nationalite = models.CharField(
+        max_length=100,
+        default="Camerounaise",
+        verbose_name="Nationalité"
+    )
+    
     # Contact
     telephone = models.CharField(
         max_length=20,

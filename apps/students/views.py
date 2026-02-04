@@ -9,18 +9,12 @@ from django.db.models import Sum, Count
 
 from .models import Etudiant, Enseignant, Inscription, Attribution
 from .serializers import (
-    EtudiantSerializer,
-    EnseignantSerializer,
     InscriptionSerializer,
-    AttributionSerializer
-)
-from .serializers import (
+    AttributionSerializer,
     EtudiantListSerializer,
     EtudiantCreateSerializer,
     EtudiantUpdateSerializer,
-    EtudiantDetailSerializer
-)
-from .serializers import (
+    EtudiantDetailSerializer,
     EnseignantListSerializer,
     EnseignantCreateSerializer,
     EnseignantUpdateSerializer,
