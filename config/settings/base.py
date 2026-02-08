@@ -8,12 +8,16 @@ development.py, production.py et test.py qui héritent de cette configuration.
 
 from pathlib import Path
 from datetime import timedelta
-from decouple import config
+from decouple import Config, RepositoryEnv
 import os
 
 # Chemin de base du projet
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.env')
+config = Config(RepositoryEnv(ENV_FILE))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Clé secrète utilisée pour le cryptage (doit être définie dans .env)
