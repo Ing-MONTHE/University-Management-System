@@ -1,0 +1,143 @@
+# =============================================================================
+# DÉPENDANCES DE DÉVELOPPEMENT
+# =============================================================================
+# Installation : pip install -r requirements-dev.txt
+# 
+# Ces packages sont utiles pour le développement mais ne sont pas nécessaires
+# en production.
+# =============================================================================
+
+# Packages de base (depuis requirements.txt)
+-r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Outils de développement
+# -----------------------------------------------------------------------------
+# Debug toolbar pour Django (très utile en développement)
+django-debug-toolbar==4.4.6
+
+# Extension shell Django avec IPython
+ipython==8.29.0
+django-extensions==3.2.3
+
+# -----------------------------------------------------------------------------
+# Tests et couverture de code
+# -----------------------------------------------------------------------------
+# Framework de test
+pytest==8.3.4
+pytest-django==4.9.0
+pytest-cov==6.0.0
+pytest-xdist==3.6.1  # Pour paralléliser les tests
+
+# Factory pour créer des objets de test
+factory-boy==3.3.1
+
+# Mock et fixtures
+pytest-mock==3.14.0
+faker==33.3.0  # Génération de données factices
+
+# -----------------------------------------------------------------------------
+# Qualité du code
+# -----------------------------------------------------------------------------
+# Linting et formatage
+flake8==7.1.1
+black==24.10.0
+isort==5.13.2
+pylint==3.3.3
+pylint-django==2.6.1
+
+# Type checking
+mypy==1.14.1
+django-stubs==5.1.3
+
+# Détection de code inutilisé
+vulture==2.14
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+# Génération de documentation
+sphinx==8.1.3
+sphinx-rtd-theme==3.0.2
+
+# Documentation de l'API
+drf-yasg==1.21.9  # Alternative à drf-spectacular pour Swagger
+
+# -----------------------------------------------------------------------------
+# Monitoring et profiling
+# -----------------------------------------------------------------------------
+# Profiling des performances
+django-silk==5.3.0
+
+# Memory profiling
+memory-profiler==0.61.0
+
+# -----------------------------------------------------------------------------
+# Base de données
+# -----------------------------------------------------------------------------
+# Outils pour PostgreSQL
+psycopg2-binary==2.9.11
+
+# Migrations avancées
+django-migration-linter==5.1.0
+
+# -----------------------------------------------------------------------------
+# Sécurité
+# -----------------------------------------------------------------------------
+# Scan des vulnérabilités
+safety==3.2.11
+bandit==1.8.0
+
+# -----------------------------------------------------------------------------
+# Utilitaires
+# -----------------------------------------------------------------------------
+# Gestion des variables d'environnement
+python-dotenv==1.0.1
+
+# Amélioration du shell
+ptpython==3.0.29
+
+# Pre-commit hooks
+pre-commit==4.0.1
+
+# -----------------------------------------------------------------------------
+# Serveur de développement
+# -----------------------------------------------------------------------------
+# Serveur WSGI pour le développement
+Werkzeug==3.1.3
+
+# Serveur ASGI
+uvicorn[standard]==0.34.0
+
+# -----------------------------------------------------------------------------
+# Notes d'installation
+# -----------------------------------------------------------------------------
+# 
+# Installation complète :
+# ----------------------
+# pip install -r requirements-dev.txt
+# 
+# Installation sélective :
+# -----------------------
+# pip install django-debug-toolbar ipython pytest-django
+# 
+# Configuration de pre-commit :
+# ----------------------------
+# pre-commit install
+# 
+# Exécution des tests avec couverture :
+# ------------------------------------
+# pytest --cov=apps --cov-report=html
+# 
+# Formatage du code :
+# ------------------
+# black .
+# isort .
+# 
+# Vérification du code :
+# ---------------------
+# flake8
+# pylint apps/
+# mypy apps/
+# 
+# =============================================================================

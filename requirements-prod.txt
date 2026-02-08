@@ -1,0 +1,152 @@
+# =============================================================================
+# DÉPENDANCES DE PRODUCTION
+# =============================================================================
+# Installation : pip install -r requirements-prod.txt
+# 
+# Ces packages sont nécessaires pour déployer l'application en production.
+# =============================================================================
+
+# Packages de base (depuis requirements.txt)
+-r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Serveur WSGI/ASGI
+# -----------------------------------------------------------------------------
+# Gunicorn - Serveur WSGI pour production
+gunicorn==23.0.0
+
+# Gevent pour améliorer les performances de Gunicorn
+gevent==24.11.1
+
+# Alternative ASGI avec Uvicorn (pour WebSockets, HTTP/2)
+uvicorn[standard]==0.34.0
+
+# -----------------------------------------------------------------------------
+# Gestion des fichiers statiques
+# -----------------------------------------------------------------------------
+# WhiteNoise pour servir les fichiers statiques
+whitenoise==6.8.2
+
+# -----------------------------------------------------------------------------
+# Cache
+# -----------------------------------------------------------------------------
+# Redis pour le cache et les sessions
+redis==5.2.1
+django-redis==5.4.0
+hiredis==3.1.0  # Parser C pour Redis (plus rapide)
+
+# -----------------------------------------------------------------------------
+# Base de données
+# -----------------------------------------------------------------------------
+# PostgreSQL adapter (version binaire pour production)
+psycopg2-binary==2.9.11
+
+# Connection pooling pour PostgreSQL
+psycopg2-pool==1.1
+
+# -----------------------------------------------------------------------------
+# Monitoring et logging
+# -----------------------------------------------------------------------------
+# Sentry pour le monitoring des erreurs
+sentry-sdk==2.20.0
+
+# New Relic pour le monitoring des performances (optionnel)
+# newrelic==10.6.0
+
+# -----------------------------------------------------------------------------
+# Sécurité
+# -----------------------------------------------------------------------------
+# Protection contre les attaques par force brute
+django-axes==7.1.0
+
+# Détection de bots et protection
+django-user-agents==0.4.0
+
+# Rate limiting
+django-ratelimit==5.0.0
+
+# -----------------------------------------------------------------------------
+# Stockage cloud (optionnel mais recommandé)
+# -----------------------------------------------------------------------------
+# AWS S3 pour le stockage des fichiers média
+# boto3==1.35.99
+# django-storages==1.14.4
+
+# Google Cloud Storage (alternative)
+# google-cloud-storage==2.19.0
+
+# Azure Storage (alternative)
+# django-storages[azure]==1.14.4
+
+# -----------------------------------------------------------------------------
+# Email
+# -----------------------------------------------------------------------------
+# Support SMTP amélioré
+django-anymail==13.3.0  # Support pour SendGrid, Mailgun, etc.
+
+# -----------------------------------------------------------------------------
+# Performance
+# -----------------------------------------------------------------------------
+# Compression des réponses
+django-compression-middleware==0.5.0
+
+# Optimisation des images
+pillow-simd==11.0.0  # Version optimisée de Pillow
+
+# -----------------------------------------------------------------------------
+# Task Queue (optionnel mais recommandé pour les tâches asynchrones)
+# -----------------------------------------------------------------------------
+# Celery pour les tâches asynchrones
+# celery==5.5.0
+# django-celery-beat==2.7.0  # Pour les tâches planifiées
+# django-celery-results==2.5.1  # Pour stocker les résultats
+
+# -----------------------------------------------------------------------------
+# Base de données additionnelle
+# -----------------------------------------------------------------------------
+# Support pour d'autres bases de données si nécessaire
+# mysqlclient==2.2.6  # MySQL/MariaDB
+# pymongo==4.12.0  # MongoDB
+
+# -----------------------------------------------------------------------------
+# Notes de configuration
+# -----------------------------------------------------------------------------
+# 
+# Installation en production :
+# ---------------------------
+# pip install -r requirements-prod.txt
+# 
+# Variables d'environnement requises :
+# -----------------------------------
+# - DJANGO_SETTINGS_MODULE=config.settings.production
+# - SECRET_KEY (clé forte et unique)
+# - ALLOWED_HOSTS (vos domaines)
+# - Base de données configurée
+# - REDIS_URL (pour le cache)
+# - Configuration email
+# - SENTRY_DSN (pour le monitoring)
+# 
+# Commandes de déploiement :
+# -------------------------
+# python manage.py collectstatic --noinput
+# python manage.py migrate --noinput
+# gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4
+# 
+# Configuration Gunicorn recommandée :
+# -----------------------------------
+# Workers : (2 x CPU cores) + 1
+# Timeout : 60 secondes
+# Max requests : 1000-2000 (pour éviter les fuites mémoire)
+# 
+# Exemple de commande Gunicorn complète :
+# gunicorn config.wsgi:application \
+#   --bind 0.0.0.0:8000 \
+#   --workers 4 \
+#   --timeout 60 \
+#   --max-requests 1000 \
+#   --max-requests-jitter 100 \
+#   --access-logfile - \
+#   --error-logfile - \
+#   --log-level info
+# 
+# =============================================================================
