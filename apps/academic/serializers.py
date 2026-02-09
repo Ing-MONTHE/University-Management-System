@@ -66,10 +66,10 @@ class DepartementSerializer(serializers.ModelSerializer):
         model = Departement
         fields = [
             'id', 'code', 'nom', 'description', 'chef_departement',
-            'faculte', 'faculte_id', 'faculte_details', 'filieres_count',
+            'faculte_id', 'faculte_details', 'filieres_count',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'faculte_details']
     
     def get_filieres_count(self, obj):
         # Nombre de filières.
@@ -99,10 +99,10 @@ class FiliereSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'code', 'nom', 'cycle', 'cycle_display', 
             'duree_annees', 'frais_inscription', 'description',
-            'departement', 'departement_id', 'departement_details',
+            'departement_id', 'departement_details',
             'matieres_count', 'is_active', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'departement_details']
     
     def get_matieres_count(self, obj):
         # Nombre de matières.
@@ -150,10 +150,10 @@ class MatiereSerializer(serializers.ModelSerializer):
             'id', 'code', 'nom', 'coefficient', 'credits',
             'volume_horaire_cm', 'volume_horaire_td', 'volume_horaire_tp',
             'volume_horaire_total', 'semestre', 'semestre_display',
-            'is_optionnelle', 'description', 'filieres', 'filiere_ids',
+            'is_optionnelle', 'description', 'filiere_ids',
             'filieres_details', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'filieres_details']
     
     def get_volume_horaire_total(self, obj):
         # Volume horaire total.
