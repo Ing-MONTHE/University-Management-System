@@ -1,26 +1,28 @@
+"""
+Modèles de gestion des emplois du temps
+Contient : Batiment, Salle, Creneau, Cours, ConflitSalle
+"""
+
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
-from django.db.models import Q, Count
-from datetime import datetime, time
-
 from apps.academic.models import Matiere, AnneeAcademique
 from apps.students.models import Enseignant, Filiere
 
 # MODÈLE BATIMENT
 class Batiment(models.Model):
-    """Bâtiment de l'université."""
+    # Bâtiment de l'université.
     
     code = models.CharField(
         max_length=10,
         unique=True,
         verbose_name="Code",
-        db_index=True
+        help_text="Ex: A, B, C, AMPHI"
     )
     
     nom = models.CharField(
         max_length=200,
-        verbose_name="Nom"
+        verbose_name="Nom",
+        help_text="Ex: Bâtiment A, Amphithéâtre"
     )
     
     nombre_etages = models.PositiveIntegerField(
@@ -28,12 +30,15 @@ class Batiment(models.Model):
         verbose_name="Nombre d'étages"
     )
     
-    adresse = models.TextField(blank=True, verbose_name="Adresse")
+    adresse = models.TextField(
+        blank=True,
+        verbose_name="Adresse/Localisation"
+    )
     
     is_active = models.BooleanField(
         default=True,
         verbose_name="Actif",
-        db_index=True
+        help_text="Le bâtiment est-il en service ?"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -44,25 +49,17 @@ class Batiment(models.Model):
         verbose_name = 'Bâtiment'
         verbose_name_plural = 'Bâtiments'
         ordering = ['code']
-        indexes = [
-            models.Index(fields=['is_active', 'code'], name='sched_bat_active_code_idx'),
-        ]
     
     def __str__(self):
         return f"{self.code} - {self.nom}"
     
-    @property
-    def nombre_salles(self):
+    def get_nombre_salles(self):
+        """Nombre de salles dans le bâtiment."""
         return self.salles.count()
-    
-    @property
-    def salles_disponibles_count(self):
-        return self.salles.filter(is_disponible=True).count()
-
 
 # MODÈLE SALLE
 class Salle(models.Model):
-    """Salle de cours."""
+    # Salle de cours.
     
     TYPE_CHOICES = [
         ('COURS', 'Salle de cours'),
@@ -72,41 +69,55 @@ class Salle(models.Model):
         ('CONFERENCE', 'Salle de conférence'),
     ]
     
+    # RELATION
     batiment = models.ForeignKey(
         Batiment,
         on_delete=models.CASCADE,
         related_name='salles',
-        verbose_name="Bâtiment",
-        db_index=True
+        verbose_name="Bâtiment"
     )
     
     code = models.CharField(
         max_length=20,
         unique=True,
         verbose_name="Code",
-        db_index=True
+        help_text="Ex: A101, AMPHI-A"
     )
     
-    nom = models.CharField(max_length=200, verbose_name="Nom")
+    nom = models.CharField(
+        max_length=200,
+        verbose_name="Nom",
+        help_text="Ex: Salle 101, Amphithéâtre A"
+    )
     
     type_salle = models.CharField(
         max_length=20,
         choices=TYPE_CHOICES,
         default='COURS',
-        verbose_name="Type",
-        db_index=True
+        verbose_name="Type de salle"
     )
     
-    capacite = models.PositiveIntegerField(verbose_name="Capacité")
+    capacite = models.PositiveIntegerField(
+        verbose_name="Capacité",
+        help_text="Nombre de places"
+    )
     
-    etage = models.PositiveIntegerField(default=0, verbose_name="Étage")
+    etage = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Étage",
+        help_text="0 = Rez-de-chaussée"
+    )
     
-    equipements = models.TextField(blank=True, verbose_name="Équipements")
+    equipements = models.TextField(
+        blank=True,
+        verbose_name="Équipements",
+        help_text="Ex: Projecteur, Ordinateurs, Tableau interactif"
+    )
     
     is_disponible = models.BooleanField(
         default=True,
         verbose_name="Disponible",
-        db_index=True
+        help_text="La salle est-elle utilisable ?"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -117,38 +128,26 @@ class Salle(models.Model):
         verbose_name = 'Salle'
         verbose_name_plural = 'Salles'
         ordering = ['batiment', 'etage', 'code']
-        indexes = [
-            models.Index(fields=['batiment', 'code'], name='sched_sal_bat_code_idx'),
-            models.Index(fields=['type_salle', 'is_disponible'], name='sched_sal_type_dispo_idx'),
-            models.Index(fields=['capacite'], name='sched_sal_cap_idx'),
-        ]
     
     def __str__(self):
-        return f"{self.code} - {self.nom}"
-    
-    @property
-    def nom_complet(self):
-        return f"{self.batiment.code} - {self.nom}"
-    
-    @property
-    def est_disponible(self):
-        return self.is_disponible
+        return f"{self.code} - {self.nom} ({self.get_type_salle_display()})"
     
     def get_taux_occupation(self, annee_academique):
-        from .models import Cours, Creneau
+        """Taux d'occupation de la salle (%)."""
         total_creneaux = Creneau.objects.count()
         if total_creneaux == 0:
             return 0
-        occupes = Cours.objects.filter(
+        
+        creneaux_occupes = Cours.objects.filter(
             salle=self,
             annee_academique=annee_academique
         ).values('creneau').distinct().count()
-        return round((occupes / total_creneaux) * 100, 2)
-
+        
+        return round((creneaux_occupes / total_creneaux) * 100, 2)
 
 # MODÈLE CRENEAU
 class Creneau(models.Model):
-    """Créneau horaire."""
+    # Créneau horaire.
     
     JOUR_CHOICES = [
         ('LUNDI', 'Lundi'),
@@ -157,27 +156,28 @@ class Creneau(models.Model):
         ('JEUDI', 'Jeudi'),
         ('VENDREDI', 'Vendredi'),
         ('SAMEDI', 'Samedi'),
+        ('DIMANCHE', 'Dimanche'),
     ]
     
     jour = models.CharField(
         max_length=10,
         choices=JOUR_CHOICES,
-        verbose_name="Jour",
-        db_index=True
+        verbose_name="Jour"
     )
     
     heure_debut = models.TimeField(
-        verbose_name="Heure début",
-        db_index=True
+        verbose_name="Heure de début"
     )
     
-    heure_fin = models.TimeField(verbose_name="Heure fin")
+    heure_fin = models.TimeField(
+        verbose_name="Heure de fin"
+    )
     
     code = models.CharField(
         max_length=50,
         unique=True,
         verbose_name="Code",
-        db_index=True
+        help_text="Ex: LUNDI-08H00-10H00"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -185,32 +185,33 @@ class Creneau(models.Model):
     
     class Meta:
         db_table = 'schedule_creneaux'
-        verbose_name = 'Créneau'
-        verbose_name_plural = 'Créneaux'
+        verbose_name = 'Créneau horaire'
+        verbose_name_plural = 'Créneaux horaires'
         ordering = ['jour', 'heure_debut']
         unique_together = ['jour', 'heure_debut', 'heure_fin']
-        indexes = [
-            models.Index(fields=['jour', 'heure_debut'], name='sched_cren_jour_debut_idx'),
-        ]
     
     def __str__(self):
         return f"{self.get_jour_display()} {self.heure_debut.strftime('%H:%M')}-{self.heure_fin.strftime('%H:%M')}"
     
-    @property
-    def duree_minutes(self):
-        debut = datetime.combine(datetime.today(), self.heure_debut)
-        fin = datetime.combine(datetime.today(), self.heure_fin)
-        return int((fin - debut).total_seconds() / 60)
-    
     def clean(self):
+        """Validation : heure_fin > heure_debut."""
         if self.heure_debut and self.heure_fin:
             if self.heure_fin <= self.heure_debut:
-                raise ValidationError({'heure_fin': 'Heure fin > heure début'})
-
+                raise ValidationError({
+                    'heure_fin': 'L\'heure de fin doit être après l\'heure de début'
+                })
+    
+    def get_duree_minutes(self):
+        """Durée du créneau en minutes."""
+        from datetime import datetime
+        debut = datetime.combine(datetime.today(), self.heure_debut)
+        fin = datetime.combine(datetime.today(), self.heure_fin)
+        duree = fin - debut
+        return int(duree.total_seconds() / 60)
 
 # MODÈLE COURS
 class Cours(models.Model):
-    """Cours programmé."""
+    # Cours programmé dans l'emploi du temps.
     
     TYPE_CHOICES = [
         ('CM', 'Cours Magistral'),
@@ -218,18 +219,19 @@ class Cours(models.Model):
         ('TP', 'Travaux Pratiques'),
     ]
     
+    # RELATIONS
     annee_academique = models.ForeignKey(
         AnneeAcademique,
         on_delete=models.CASCADE,
         related_name='cours',
-        db_index=True
+        verbose_name="Année académique"
     )
     
     matiere = models.ForeignKey(
         Matiere,
         on_delete=models.CASCADE,
         related_name='cours',
-        db_index=True
+        verbose_name="Matière"
     )
     
     enseignant = models.ForeignKey(
@@ -237,14 +239,14 @@ class Cours(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='cours',
-        db_index=True
+        verbose_name="Enseignant"
     )
     
     filiere = models.ForeignKey(
         Filiere,
         on_delete=models.CASCADE,
         related_name='cours',
-        db_index=True
+        verbose_name="Filière"
     )
     
     salle = models.ForeignKey(
@@ -252,21 +254,58 @@ class Cours(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='cours',
-        db_index=True
+        verbose_name="Salle"
     )
     
     creneau = models.ForeignKey(
         Creneau,
         on_delete=models.CASCADE,
         related_name='cours',
-        db_index=True
+        verbose_name="Créneau horaire"
     )
     
+    # INFORMATIONS
     type_cours = models.CharField(
         max_length=2,
         choices=TYPE_CHOICES,
-        verbose_name="Type",
-        db_index=True
+        verbose_name="Type de cours"
+    )
+    
+    effectif_prevu = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Effectif prévu",
+        help_text="Nombre d'étudiants attendus"
+    )
+    
+    semestre = models.PositiveIntegerField(
+        choices=[(1, 'Semestre 1'), (2, 'Semestre 2')],
+        verbose_name="Semestre"
+    )
+    
+    date_debut = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date de début",
+        help_text="Date de début effectif du cours"
+    )
+    
+    date_fin = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date de fin",
+        help_text="Date de fin effectif du cours"
+    )
+    
+    is_actif = models.BooleanField(
+        default=True,
+        verbose_name="Actif",
+        help_text="Le cours est-il programmé ?"
+    )
+    
+    remarques = models.TextField(
+        blank=True,
+        verbose_name="Remarques"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -276,58 +315,216 @@ class Cours(models.Model):
         db_table = 'schedule_cours'
         verbose_name = 'Cours'
         verbose_name_plural = 'Cours'
-        ordering = ['creneau__jour', 'creneau__heure_debut']
-        indexes = [
-            models.Index(fields=['matiere', 'annee_academique'], name='sched_cours_mat_annee_idx'),
-            models.Index(fields=['enseignant', 'creneau'], name='sched_cours_ens_cren_idx'),
-            models.Index(fields=['salle', 'creneau'], name='sched_cours_sal_cren_idx'),
-            models.Index(fields=['filiere', 'annee_academique'], name='sched_cours_fil_annee_idx'),
-        ]
+        ordering = ['annee_academique', 'filiere', 'creneau']
     
     def __str__(self):
         return f"{self.matiere.code} - {self.filiere.code} - {self.creneau}"
     
-    @property
-    def nom_complet(self):
-        return f"{self.matiere.nom} ({self.get_type_cours_display()})"
+    def clean(self):
+        """Validation des conflits."""
+        if not self.pk:  # Nouveau cours uniquement
+            # Vérifier conflit salle
+            conflit_salle = Cours.objects.filter(
+                salle=self.salle,
+                creneau=self.creneau,
+                annee_academique=self.annee_academique,
+                is_actif=True
+            ).exclude(pk=self.pk)
+            
+            if conflit_salle.exists():
+                raise ValidationError({
+                    'salle': f'Cette salle est déjà occupée à ce créneau par : {conflit_salle.first()}'
+                })
+            
+            # Vérifier conflit enseignant
+            if self.enseignant:
+                conflit_enseignant = Cours.objects.filter(
+                    enseignant=self.enseignant,
+                    creneau=self.creneau,
+                    annee_academique=self.annee_academique,
+                    is_actif=True
+                ).exclude(pk=self.pk)
+                
+                if conflit_enseignant.exists():
+                    raise ValidationError({
+                        'enseignant': f'Cet enseignant a déjà un cours à ce créneau : {conflit_enseignant.first()}'
+                    })
+            
+            # Vérifier capacité salle
+            if self.salle and self.effectif_prevu:
+                if self.effectif_prevu > self.salle.capacite:
+                    raise ValidationError({
+                        'effectif_prevu': f'L\'effectif ({self.effectif_prevu}) dépasse la capacité de la salle ({self.salle.capacite})'
+                    })
     
-    @property
-    def jour_nom(self):
-        return self.creneau.get_jour_display()
-    
-    @property
-    def horaire(self):
-        return f"{self.creneau.heure_debut.strftime('%H:%M')}-{self.creneau.heure_fin.strftime('%H:%M')}"
-
+    def save(self, *args, **kwargs):
+        """Enregistrer et créer conflit si détecté."""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 # MODÈLE CONFLIT SALLE
 class ConflitSalle(models.Model):
-    """Détection conflits salles."""
+    # Détection et gestion des conflits de salles.
     
-    salle = models.ForeignKey(Salle, on_delete=models.CASCADE, db_index=True)
-    cours1 = models.ForeignKey(Cours, on_delete=models.CASCADE, related_name='conflits_cours1', db_index=True)
-    cours2 = models.ForeignKey(Cours, on_delete=models.CASCADE, related_name='conflits_cours2')
+    STATUT_CHOICES = [
+        ('DETECTE', 'Détecté'),
+        ('EN_COURS', 'En cours de résolution'),
+        ('RESOLU', 'Résolu'),
+        ('IGNORE', 'Ignoré'),
+    ]
     
-    date_detection = models.DateTimeField(auto_now_add=True, db_index=True)
-    resolu = models.BooleanField(default=False, db_index=True)
+    TYPE_CHOICES = [
+        ('SALLE', 'Conflit de salle'),
+        ('ENSEIGNANT', 'Conflit d\'enseignant'),
+        ('CAPACITE', 'Capacité dépassée'),
+    ]
+    
+    # RELATIONS
+    cours1 = models.ForeignKey(
+        Cours,
+        on_delete=models.CASCADE,
+        related_name='conflits_comme_cours1',
+        verbose_name="Premier cours"
+    )
+    
+    cours2 = models.ForeignKey(
+        Cours,
+        on_delete=models.CASCADE,
+        related_name='conflits_comme_cours2',
+        null=True,
+        blank=True,
+        verbose_name="Deuxième cours"
+    )
+    
+    # INFORMATIONS
+    type_conflit = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        verbose_name="Type de conflit"
+    )
+    
+    description = models.TextField(
+        verbose_name="Description du conflit"
+    )
+    
+    statut = models.CharField(
+        max_length=20,
+        choices=STATUT_CHOICES,
+        default='DETECTE',
+        verbose_name="Statut"
+    )
+    
+    date_detection = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Date de détection"
+    )
+    
+    date_resolution = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Date de résolution"
+    )
+    
+    solution_appliquee = models.TextField(
+        blank=True,
+        verbose_name="Solution appliquée"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'schedule_conflits'
-        verbose_name = 'Conflit salle'
-        verbose_name_plural = 'Conflits salles'
+        db_table = 'schedule_conflits_salles'
+        verbose_name = 'Conflit'
+        verbose_name_plural = 'Conflits'
         ordering = ['-date_detection']
-        indexes = [
-            models.Index(fields=['resolu', '-date_detection'], name='sched_conf_res_date_idx'),
-        ]
     
     def __str__(self):
-        return f"Conflit {self.salle.code} - {self.cours1.creneau}"
+        return f"{self.get_type_conflit_display()} - {self.get_statut_display()}"
     
-    def resoudre(self):
-        self.resolu = True
-        self.save(update_fields=['resolu'])
+    def marquer_resolu(self, solution):
+        """Marquer le conflit comme résolu."""
+        from django.utils import timezone
+        self.statut = 'RESOLU'
+        self.date_resolution = timezone.now()
+        self.solution_appliquee = solution
+        self.save()
     
-    @classmethod
-    def get_actifs(cls):
-        return cls.objects.filter(resolu=False)
-    
+    @staticmethod
+    def detecter_conflits(annee_academique):
+        """Détecter tous les conflits pour une année académique."""
+        conflits_detectes = []
+        
+        cours_actifs = Cours.objects.filter(
+            annee_academique=annee_academique,
+            is_actif=True
+        ).select_related('salle', 'enseignant', 'creneau', 'matiere', 'filiere')
+        
+        for cours in cours_actifs:
+            # Conflit de salle
+            conflits_salle = cours_actifs.filter(
+                salle=cours.salle,
+                creneau=cours.creneau
+            ).exclude(pk=cours.pk)
+            
+            for autre_cours in conflits_salle:
+                # Vérifier si conflit déjà enregistré
+                existe = ConflitSalle.objects.filter(
+                    cours1__in=[cours, autre_cours],
+                    cours2__in=[cours, autre_cours],
+                    type_conflit='SALLE',
+                    statut__in=['DETECTE', 'EN_COURS']
+                ).exists()
+                
+                if not existe:
+                    conflit = ConflitSalle.objects.create(
+                        cours1=cours,
+                        cours2=autre_cours,
+                        type_conflit='SALLE',
+                        description=f"Salle {cours.salle.code} occupée par 2 cours au même créneau"
+                    )
+                    conflits_detectes.append(conflit)
+            
+            # Conflit enseignant
+            if cours.enseignant:
+                conflits_ens = cours_actifs.filter(
+                    enseignant=cours.enseignant,
+                    creneau=cours.creneau
+                ).exclude(pk=cours.pk)
+                
+                for autre_cours in conflits_ens:
+                    existe = ConflitSalle.objects.filter(
+                        cours1__in=[cours, autre_cours],
+                        cours2__in=[cours, autre_cours],
+                        type_conflit='ENSEIGNANT',
+                        statut__in=['DETECTE', 'EN_COURS']
+                    ).exists()
+                    
+                    if not existe:
+                        conflit = ConflitSalle.objects.create(
+                            cours1=cours,
+                            cours2=autre_cours,
+                            type_conflit='ENSEIGNANT',
+                            description=f"Enseignant {cours.enseignant.user.get_full_name()} a 2 cours au même créneau"
+                        )
+                        conflits_detectes.append(conflit)
+            
+            # Conflit capacité
+            if cours.salle and cours.effectif_prevu:
+                if cours.effectif_prevu > cours.salle.capacite:
+                    existe = ConflitSalle.objects.filter(
+                        cours1=cours,
+                        cours2__isnull=True,
+                        type_conflit='CAPACITE',
+                        statut__in=['DETECTE', 'EN_COURS']
+                    ).exists()
+                    
+                    if not existe:
+                        conflit = ConflitSalle.objects.create(
+                            cours1=cours,
+                            type_conflit='CAPACITE',
+                            description=f"Effectif ({cours.effectif_prevu}) > Capacité salle ({cours.salle.capacite})"
+                        )
+                        conflits_detectes.append(conflit)
+        
+        return conflits_detectes
