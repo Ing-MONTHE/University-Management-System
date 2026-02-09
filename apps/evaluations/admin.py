@@ -43,26 +43,26 @@ class EvaluationAdmin(admin.ModelAdmin):
     """Configuration admin pour Évaluation."""
     
     list_display = [
-        'titre', 'matiere', 'type_evaluation', 'date_evaluation',  # ✓ CORRIGÉ: date → date_evaluation
-        'coefficient', 'note_max', 'get_moyenne_classe',  # ✓ CORRIGÉ: note_totale → note_max
+        'titre', 'matiere', 'type_evaluation', 'date',
+        'coefficient', 'note_totale', 'get_moyenne_classe',
         'get_nombre_presents', 'get_nombre_absents'
     ]
     list_filter = [
         'type_evaluation', 'annee_academique', 'matiere',
-        'date_evaluation', 'created_at'  # ✓ CORRIGÉ: date → date_evaluation
+        'date', 'created_at'
     ]
     search_fields = ['titre', 'matiere__nom', 'matiere__code']
-    ordering = ['-date_evaluation']  # ✓ CORRIGÉ: -date → -date_evaluation
+    ordering = ['-date']
     
     fieldsets = (
         ('Identification', {
             'fields': ('matiere', 'type_evaluation', 'annee_academique')
         }),
         ('Détails', {
-            'fields': ('titre', 'date_evaluation', 'duree_minutes', 'description')  # ✓ CORRIGÉ: date → date_evaluation, duree → duree_minutes
+            'fields': ('titre', 'date', 'duree', 'description')
         }),
         ('Notation', {
-            'fields': ('coefficient', 'note_max')  # ✓ CORRIGÉ: note_totale → note_max
+            'fields': ('coefficient', 'note_totale')
         }),
         ('Dates système', {
             'fields': ('created_at', 'updated_at'),
@@ -74,17 +74,17 @@ class EvaluationAdmin(admin.ModelAdmin):
     
     def get_moyenne_classe(self, obj):
         """Moyenne de la classe."""
-        return round(obj.moyenne_classe, 2)  # ✓ CORRIGÉ: utilise la property moyenne_classe
+        return round(obj.get_moyenne_classe(), 2)
     get_moyenne_classe.short_description = 'Moyenne classe'
     
     def get_nombre_presents(self, obj):
         """Nombre de présents."""
-        return obj.nombre_presents  # ✓ CORRIGÉ: utilise la property nombre_presents
+        return obj.get_nombre_presents()
     get_nombre_presents.short_description = 'Présents'
     
     def get_nombre_absents(self, obj):
         """Nombre d'absents."""
-        absents = obj.nombre_absents  # ✓ CORRIGÉ: utilise la property nombre_absents
+        absents = obj.get_nombre_absents()
         if absents > 0:
             return format_html('<span style="color: red;">{}</span>', absents)
         return absents
@@ -97,12 +97,12 @@ class NoteAdmin(admin.ModelAdmin):
     
     list_display = [
         'get_etudiant', 'get_evaluation', 'note_obtenue',
-        'get_note_max', 'get_note_sur_20', 'get_appreciation',  # ✓ CORRIGÉ: note_sur supprimé, ajouté get_note_max
-        'absence', 'est_validee', 'date_saisie'  # ✓ AJOUTÉ: est_validee
+        'note_sur', 'get_note_sur_20', 'get_appreciation',
+        'absence', 'date_saisie'
     ]
     list_filter = [
         'evaluation__type_evaluation', 'evaluation__matiere',
-        'absence', 'est_validee', 'date_saisie'  # ✓ AJOUTÉ: est_validee
+        'absence', 'date_saisie'
     ]
     search_fields = [
         'etudiant__matricule', 'etudiant__user__first_name',
@@ -112,10 +112,10 @@ class NoteAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Évaluation', {
-            'fields': ('evaluation', 'etudiant', 'saisie_par')  # ✓ AJOUTÉ: saisie_par
+            'fields': ('evaluation', 'etudiant')
         }),
         ('Note', {
-            'fields': ('note_obtenue', 'absence', 'est_validee')  # ✓ CORRIGÉ: note_sur supprimé, ajouté est_validee
+            'fields': ('note_obtenue', 'note_sur', 'absence')
         }),
         ('Appréciations', {
             'fields': ('appreciations',)
@@ -138,14 +138,9 @@ class NoteAdmin(admin.ModelAdmin):
         return f"{obj.evaluation.matiere.code} - {obj.evaluation.titre}"
     get_evaluation.short_description = 'Évaluation'
     
-    def get_note_max(self, obj):
-        """Note maximale."""
-        return obj.evaluation.note_max  # ✓ NOUVEAU: affiche la note max
-    get_note_max.short_description = 'Note max'
-    
     def get_note_sur_20(self, obj):
         """Note sur 20."""
-        note = obj.note_sur_20  # ✓ CORRIGÉ: utilise la property
+        note = obj.get_note_sur_20()
         if note >= 10:
             return format_html('<span style="color: green; font-weight: bold;">{}/20</span>', round(note, 2))
         else:
@@ -154,7 +149,7 @@ class NoteAdmin(admin.ModelAdmin):
     
     def get_appreciation(self, obj):
         """Appréciation."""
-        appreciation = obj.appreciation_auto  # ✓ CORRIGÉ: utilise la property
+        appreciation = obj.get_appreciation_auto()
         colors = {
             'Excellent': 'green',
             'Très bien': 'blue',
@@ -162,8 +157,7 @@ class NoteAdmin(admin.ModelAdmin):
             'Assez bien': 'orange',
             'Passable': 'orange',
             'Insuffisant': 'red',
-            'Absent': 'gray',
-            'Non saisi': 'gray'  # ✓ AJOUTÉ
+            'Absent': 'gray'
         }
         color = colors.get(appreciation, 'black')
         return format_html('<span style="color: {};">{}</span>', color, appreciation)
@@ -177,7 +171,7 @@ class ResultatAdmin(admin.ModelAdmin):
     list_display = [
         'get_etudiant', 'matiere', 'annee_academique',
         'get_moyenne_coloree', 'mention', 'statut',
-        'credits_obtenus'  # ✓ CORRIGÉ: rang supprimé (il est dans DecisionJury)
+        'credits_obtenus', 'rang'
     ]
     list_filter = [
         'annee_academique', 'matiere', 'statut',
@@ -187,17 +181,17 @@ class ResultatAdmin(admin.ModelAdmin):
         'etudiant__matricule', 'etudiant__user__first_name',
         'etudiant__user__last_name', 'matiere__nom'
     ]
-    ordering = ['-moyenne']  # ✓ CORRIGÉ: moyenne_generale → moyenne
+    ordering = ['-moyenne_generale', 'rang']
     
     fieldsets = (
         ('Étudiant et Matière', {
             'fields': ('etudiant', 'matiere', 'annee_academique')
         }),
         ('Résultats', {
-            'fields': ('moyenne', 'credits_obtenus')  # ✓ CORRIGÉ: moyenne_generale → moyenne, rang supprimé
+            'fields': ('moyenne_generale', 'credits_obtenus', 'rang')
         }),
         ('Décision', {
-            'fields': ('statut', 'mention', 'observations')  # ✓ AJOUTÉ: observations
+            'fields': ('statut', 'mention')
         }),
         ('Dates', {
             'fields': ('created_at', 'updated_at'),
@@ -214,7 +208,7 @@ class ResultatAdmin(admin.ModelAdmin):
     
     def get_moyenne_coloree(self, obj):
         """Moyenne colorée."""
-        moyenne = obj.moyenne  # ✓ CORRIGÉ: moyenne_generale → moyenne
+        moyenne = obj.moyenne_generale
         if moyenne >= 16:
             color = 'green'
         elif moyenne >= 14:
@@ -292,7 +286,7 @@ class SessionDeliberationAdmin(admin.ModelAdmin):
     
     def get_nombre_etudiants(self, obj):
         """Nombre d'étudiants."""
-        return obj.nombre_etudiants  # ✓ CORRIGÉ: utilise la property
+        return obj.get_nombre_etudiants()
     get_nombre_etudiants.short_description = 'Nb étudiants'
     
     def get_taux_reussite_coloré(self, obj):
@@ -469,7 +463,7 @@ class DecisionJuryAdmin(admin.ModelAdmin):
     
     def get_credits(self, obj):
         """Crédits."""
-        taux = obj.taux_credits_pourcent  # ✓ CORRIGÉ: utilise la property
+        taux = obj.get_taux_credits()
         if taux >= 75:
             color = 'green'
         elif taux >= 50:
@@ -478,6 +472,6 @@ class DecisionJuryAdmin(admin.ModelAdmin):
             color = 'red'
         return format_html(
             '{}/{} <span style="color: {};">({} %)</span>',
-            obj.total_credits_obtenus, obj.total_credits_requis, color, round(taux, 2)
+            obj.total_credits_obtenus, obj.total_credits_requis, color, taux
         )
     get_credits.short_description = 'Crédits'
