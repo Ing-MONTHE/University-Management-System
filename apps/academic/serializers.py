@@ -52,6 +52,9 @@ class DepartementSerializer(serializers.ModelSerializer):
     # Inclure les détails de la faculté
     faculte_details = FaculteSerializer(source='faculte', read_only=True)
     
+    # ID de la faculté pour lecture
+    faculte = serializers.PrimaryKeyRelatedField(read_only=True)
+    
     # ID de la faculté (pour créer/modifier)
     faculte_id = serializers.PrimaryKeyRelatedField(
         queryset=Faculte.objects.all(),
@@ -66,10 +69,10 @@ class DepartementSerializer(serializers.ModelSerializer):
         model = Departement
         fields = [
             'id', 'code', 'nom', 'description', 'chef_departement',
-            'faculte_id', 'faculte_details', 'filieres_count',
+            'faculte', 'faculte_id', 'faculte_details', 'filieres_count',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'faculte_details']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'faculte', 'faculte_details']
     
     def get_filieres_count(self, obj):
         # Nombre de filières.

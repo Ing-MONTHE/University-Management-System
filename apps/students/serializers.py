@@ -1,6 +1,6 @@
 # Sérialisation des modèles étudiants/enseignants
 
-import datetime
+from datetime import datetime
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Enseignant, Attribution
@@ -382,7 +382,7 @@ class EtudiantCreateSerializer(serializers.Serializer):
         nom = validated_data['nom']
         prenom = validated_data['prenom']
         email = validated_data['email']
-        photo = validated_data.pop('photo', None)
+        photo = validated_data.pop('photo', None)  # Extraire la photo si présente
         
         # Générer username unique
         base_username = f"{prenom.lower()}.{nom.lower()}"
@@ -421,9 +421,13 @@ class EtudiantCreateSerializer(serializers.Serializer):
             tuteur_nom=validated_data.get('tuteur_nom', ''),
             tuteur_telephone=validated_data.get('tuteur_telephone', ''),
             tuteur_email=validated_data.get('tuteur_email', ''),
-            statut=validated_data.get('statut', 'ACTIF'),
-            photo=photo
+            statut=validated_data.get('statut', 'ACTIF')
         )
+        
+        # Ajouter la photo si elle existe
+        if photo:
+            etudiant.photo = photo
+            etudiant.save()
         
         return etudiant
 
@@ -460,6 +464,9 @@ class EtudiantUpdateSerializer(serializers.Serializer):
 class EtudiantDetailSerializer(serializers.ModelSerializer):
     """Serializer détaillé pour un étudiant avec toutes les infos"""
     
+    nom = serializers.SerializerMethodField()
+    prenom = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
     photo_url = serializers.SerializerMethodField()
     sexe_display = serializers.CharField(source='get_sexe_display', read_only=True)
@@ -469,6 +476,15 @@ class EtudiantDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Etudiant
         fields = '__all__'
+    
+    def get_nom(self, obj):
+        return obj.user.last_name if obj.user else ''
+    
+    def get_prenom(self, obj):
+        return obj.user.first_name if obj.user else ''
+    
+    def get_email(self, obj):
+        return obj.email_personnel or (obj.user.email if obj.user else '')
     
     def get_user(self, obj):
         return {
@@ -565,6 +581,9 @@ class EnseignantCreateSerializer(serializers.Serializer):
         default='ACTIF'
     )
     
+    # Photo (optionnel)
+    photo = serializers.ImageField(required=False, allow_null=True)
+    
     def validate_email(self, value):
         if Enseignant.objects.filter(email_personnel=value).exists():
             raise serializers.ValidationError("Cet email existe déjà.")
@@ -579,6 +598,7 @@ class EnseignantCreateSerializer(serializers.Serializer):
         prenom = validated_data['prenom']
         email = validated_data['email']
         departement_id = validated_data.pop('departement_id')
+        photo = validated_data.pop('photo', None)  # Extraire la photo
         
         # Générer username
         username = f"{prenom.lower()}.{nom.lower()}"
@@ -627,6 +647,11 @@ class EnseignantCreateSerializer(serializers.Serializer):
             date_embauche=validated_data['date_embauche'],
             statut=validated_data.get('statut', 'ACTIF')
         )
+        
+        # Ajouter la photo si elle existe
+        if photo:
+            enseignant.photo = photo
+            enseignant.save()
         
         return enseignant
 
