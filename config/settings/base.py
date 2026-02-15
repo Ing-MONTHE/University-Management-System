@@ -27,6 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 # Liste des applications installées
 INSTALLED_APPS = [
     # Applications Django par défaut
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -72,11 +73,15 @@ MIDDLEWARE = [
 # Configuration des URLs
 ROOT_URLCONF = 'config.urls'
 
+# Configuration Grappelli
+GRAPPELLI_ADMIN_TITLE = "Système de Gestion Universitaire"
+GRAPPELLI_INDEX_DASHBOARD = 'config.dashboard.CustomIndexDashboard'
+
 # Configuration des templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Dossier des templates personnalisés
+        'DIRS': [],  # Dossier des templates personnalisés
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -210,9 +215,7 @@ SPECTACULAR_SETTINGS = {
 # Configuration des fichiers statiques
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    # BASE_DIR / 'static',  # Décommenter si vous avez un dossier static personnalisé
-]
+#STATICFILES_DIRS = [ BASE_DIR / 'static']
 
 # Configuration des fichiers média (uploads)
 MEDIA_URL = config('MEDIA_URL', default='/media/')

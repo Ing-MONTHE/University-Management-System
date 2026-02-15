@@ -16,7 +16,7 @@ class BatimentAdmin(admin.ModelAdmin):
     
     list_display = [
         'code', 'nom', 'nombre_etages', 'get_nombre_salles',
-        'get_is_active', 'created_at'
+        'is_active', 'created_at'
     ]
     list_filter = ['is_active', 'nombre_etages', 'created_at']
     search_fields = ['code', 'nom', 'adresse']
@@ -42,11 +42,7 @@ class BatimentAdmin(admin.ModelAdmin):
     
     def get_nombre_salles(self, obj):
         """Nombre de salles."""
-        count = obj.get_nombre_salles()
-        return format_html(
-            '<span style="font-weight: bold;">{}</span>',
-            count
-        )
+        return obj.salles.count()
     get_nombre_salles.short_description = 'Nb salles'
     
     def get_is_active(self, obj):

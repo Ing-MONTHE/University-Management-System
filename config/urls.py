@@ -8,6 +8,9 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    #Grappelli URLS
+    path("grappelli/", include("grappelli.urls")),
+    
     #Admin django
     path('admin/', admin.site.urls),
     path('api/', include('apps.core.urls')),
