@@ -35,7 +35,7 @@ urlpatterns = [
     path('api/', include('apps.evaluations.urls')),
 
     #API - Module Emploi du Temps
-    path('api/', include('apps.schedule.urls')),
+    path('api/schedule/', include('apps.schedule.urls')),
 
     #API - Module bibliotheque
     path('api/', include('apps.library.urls')),

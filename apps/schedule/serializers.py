@@ -81,7 +81,7 @@ class CreneauSerializer(serializers.ModelSerializer):
             'id', 'jour', 'jour_display', 'heure_debut', 'heure_fin',
             'code', 'duree_minutes', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'code', 'created_at', 'updated_at']
     
     def get_duree_minutes(self, obj):
         """Durée du créneau en minutes."""
@@ -99,6 +99,30 @@ class CreneauSerializer(serializers.ModelSerializer):
                 })
         
         return attrs
+    
+    def create(self, validated_data):
+        """Créer un créneau avec génération automatique du code."""
+        from datetime import datetime
+        
+        # Convertir les heures au format time si nécessaire
+        heure_debut = validated_data.get('heure_debut')
+        heure_fin = validated_data.get('heure_fin')
+        
+        # Si les heures sont des strings, les convertir
+        if isinstance(heure_debut, str):
+            heure_debut = datetime.strptime(heure_debut, '%H:%M').time()
+            validated_data['heure_debut'] = heure_debut
+        
+        if isinstance(heure_fin, str):
+            heure_fin = datetime.strptime(heure_fin, '%H:%M').time()
+            validated_data['heure_fin'] = heure_fin
+        
+        # Générer le code automatiquement si non fourni
+        if 'code' not in validated_data or not validated_data['code']:
+            jour = validated_data['jour']
+            validated_data['code'] = f"{jour}-{heure_debut.strftime('%H%M')}-{heure_fin.strftime('%H%M')}"
+        
+        return super().create(validated_data)
 
 # COURS SERIALIZER
 class CoursSerializer(serializers.ModelSerializer):
